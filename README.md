@@ -48,7 +48,7 @@ http://localhost:3004/
 Health check:
 
 ```bash
-http://localhost:3004/health
+http://localhost:3004/api/health
 ```
 
 ## API
@@ -56,13 +56,33 @@ http://localhost:3004/health
 Analyze by URL:
 
 ```bash
-curl "http://localhost:3004/analyze?url=https://github.com/facebook/react/pull/30000"
+curl "http://localhost:3004/api/analyze?url=https://github.com/facebook/react/pull/30000"
 ```
 
 Analyze by parts:
 
 ```bash
-curl "http://localhost:3004/analyze?owner=facebook&repo=react&pr=30000"
+curl "http://localhost:3004/api/analyze?owner=facebook&repo=react&pr=30000"
+```
+
+Compatibility aliases:
+
+- `/health` also works locally and on Vercel
+- `/analyze` also works locally and on Vercel
+
+## Vercel Deployment
+
+ChunkCheck now uses Vercel-native serverless routes:
+
+- `/api/analyze`
+- `/api/health`
+
+Static pages are served from `public/`, and the API runs from `api/*.js`.
+
+Make sure to set this environment variable in Vercel:
+
+```bash
+GITHUB_TOKEN=your_github_token_here
 ```
 
 Example response:

@@ -83,7 +83,7 @@ if (form && input && statusBox) {
     }
 
     try {
-      const response = await fetch(`/analyze?url=${encodeURIComponent(url)}`);
+      const response = await fetch(`/api/analyze?url=${encodeURIComponent(url)}`);
       const payload = await response.json();
 
       if (!response.ok) {
