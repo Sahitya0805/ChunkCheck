@@ -1,5 +1,6 @@
-const { sendHealth } = require("./_shared");
-
 module.exports = function handler(req, res) {
-  return sendHealth(req, res);
+  return res.status(200).json({
+    status: "ok",
+    service: "ChunkCheck"
+  });
 };

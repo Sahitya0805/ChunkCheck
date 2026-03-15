@@ -1,12 +1,6 @@
-const analyzePR = require("../analyzer/prAnalyzer");
-const { parsePullRequestUrl } = require("../utils/parsePrUrl");
-
-function sendHealth(_req, res) {
-  return res.status(200).json({ ok: true });
-}
-
 async function sendAnalysis(req, res) {
   try {
+    const { parsePullRequestUrl } = require("../utils/parsePrUrl");
     const parsed = req.query.url
       ? parsePullRequestUrl(req.query.url)
       : {
@@ -22,6 +16,7 @@ async function sendAnalysis(req, res) {
       });
     }
 
+    const analyzePR = require("../analyzer/prAnalyzer");
     const result = await analyzePR(parsed.owner, parsed.repo, parsed.prNumber);
 
     return res.status(200).json(result);
@@ -35,6 +30,5 @@ async function sendAnalysis(req, res) {
 }
 
 module.exports = {
-  sendAnalysis,
-  sendHealth
+  sendAnalysis
 };
