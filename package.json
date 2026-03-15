@@ -1,0 +1,16 @@
+{
+  "name": "chunkcheck",
+  "version": "1.0.0",
+  "description": "Analyze GitHub pull requests and return a quality score.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "dependencies": {
+    "@octokit/rest": "^22.0.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0"
+  }
+}

@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Analyze PR | ChunkCheck</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="background-blocks" aria-hidden="true">
+      <span class="bg-block block-a"></span>
+      <span class="bg-block block-b"></span>
+      <span class="bg-block block-c"></span>
+      <span class="bg-block block-d"></span>
+      <span class="bg-block block-e"></span>
+      <span class="bg-block block-f"></span>
+      <span class="bg-block block-g"></span>
+    </div>
+    <div class="page-shell">
+      <header class="simple-topbar">
+        <a href="/" class="brand-lockup">
+          <span class="brand-mark" aria-hidden="true">
+            <span class="brand-mark-core"></span>
+          </span>
+          <span class="brand-copy">
+            <strong>ChunkCheck</strong>
+            <small>Block-by-block pull request review</small>
+          </span>
+        </a>
+        <a href="/login.html" class="login-link" id="top-login-link">Login</a>
+      </header>
+
+      <main class="analyze-layout">
+        <section class="single-panel">
+          <p class="eyebrow">Analyze Pull Request</p>
+          <h1 class="page-title">Paste a GitHub PR link and generate a quality report.</h1>
+          <p class="section-copy">Use any GitHub pull request URL from any repository and language stack.</p>
+
+          <div class="mini-feature-row">
+            <div class="mini-feature">
+              <span class="mini-feature-title">Size</span>
+              <span class="mini-feature-copy">Files and line changes</span>
+            </div>
+            <div class="mini-feature">
+              <span class="mini-feature-title">Reliability</span>
+              <span class="mini-feature-copy">Tests and CI coverage</span>
+            </div>
+            <div class="mini-feature">
+              <span class="mini-feature-title">Reviewability</span>
+              <span class="mini-feature-copy">Docs and commit quality</span>
+            </div>
+          </div>
+
+          <form id="analyze-form" class="analyze-form">
+            <label class="field-label" for="pr-url">GitHub Pull Request URL</label>
+            <div class="stacked-form">
+              <input
+                id="pr-url"
+                name="url"
+                type="url"
+                placeholder="https://github.com/owner/repo/pull/123"
+                required
+              />
+              <button type="submit">Analyze PR</button>
+            </div>
+            <p class="form-hint">Public PRs work best unless a GitHub token is configured on the server.</p>
+          </form>
+
+          <div id="status" class="status" aria-live="polite"></div>
+        </section>
+
+        <section id="results" class="results hidden" aria-live="polite">
+          <div class="dashboard-grid">
+            <div class="summary-card dashboard-hero hologram-card">
+              <div class="score-ring-card">
+                <div class="score-ring" id="score-ring" style="--score: 0;">
+                  <div class="score-ring-inner">
+                    <span class="score-ring-value" id="score-ring-value">0</span>
+                    <span class="score-ring-total">/100</span>
+                  </div>
+                </div>
+                <div class="summary-copy">
+                  <p class="summary-label">PR Score</p>
+                  <h2 id="score-title">0 / 100</h2>
+                  <p id="score-summary" class="summary-text"></p>
+                </div>
+              </div>
+
+              <div class="summary-side">
+                <div class="repo-meta">
+                  <p id="repo-name" class="repo-name"></p>
+                  <a id="pr-link" href="#" target="_blank" rel="noreferrer" class="repo-link">Open pull request</a>
+                </div>
+                <div class="badge-grid" id="badge-grid"></div>
+              </div>
+            </div>
+
+            <aside class="side-panel">
+              <section class="detail-card">
+                <h3>How To Improve</h3>
+                <ul id="improvement-list" class="detail-list"></ul>
+              </section>
+
+              <section class="detail-card">
+                <h3>Progress Trend</h3>
+                <div id="trend-summary" class="trend-summary">Analyze a few PRs to see whether your quality is improving.</div>
+              </section>
+
+              <section class="detail-card">
+                <h3>Performance Chart</h3>
+                <div id="history-chart" class="history-chart" aria-label="PR score history chart"></div>
+              </section>
+            </aside>
+          </div>
+
+          <div class="history-card">
+            <div class="history-header">
+              <div>
+                <p class="summary-label">PR History</p>
+                <h3>Your recent PR analyses</h3>
+              </div>
+              <button id="clear-history-button" type="button" class="ghost-button">Clear History</button>
+            </div>
+            <div id="history-list" class="history-list"></div>
+          </div>
+
+          <div class="metrics-grid" id="metrics-grid"></div>
+
+          <div class="details-grid">
+            <section class="detail-card">
+              <h3>Strengths</h3>
+              <ul id="strengths-list" class="detail-list"></ul>
+            </section>
+
+            <section class="detail-card">
+              <h3>Suggestions</h3>
+              <ul id="suggestions-list" class="detail-list"></ul>
+            </section>
+
+            <section class="detail-card detail-card-wide">
+              <h3>Risk signals</h3>
+              <ul id="analysis-list" class="detail-list"></ul>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ChunkCheck</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="background-blocks" aria-hidden="true">
+      <span class="bg-block block-a"></span>
+      <span class="bg-block block-b"></span>
+      <span class="bg-block block-c"></span>
+      <span class="bg-block block-d"></span>
+      <span class="bg-block block-e"></span>
+      <span class="bg-block block-f"></span>
+      <span class="bg-block block-g"></span>
+    </div>
+    <div class="page-shell">
+      <header class="simple-topbar">
+        <a href="/" class="brand-lockup">
+          <span class="brand-mark" aria-hidden="true">
+            <span class="brand-mark-core"></span>
+          </span>
+          <span class="brand-copy">
+            <strong>ChunkCheck</strong>
+            <small>Block-by-block pull request review</small>
+          </span>
+        </a>
+        <a href="/login.html" class="login-link" id="top-login-link">Login</a>
+      </header>
+
+      <main class="home-layout">
+        <section class="home-hero">
+          <p class="eyebrow">PR Quality Intelligence</p>
+          <h1>ChunkCheck helps developers understand whether a GitHub pull request is ready for review.</h1>
+          <p class="hero-text hero-text-wide">
+            The website analyzes any GitHub Pull Request and returns a quality score from 0 to 100. It checks files
+            changed, lines changed, test presence, CI status, documentation signals, and commit quality, then gives
+            clear suggestions like adding tests or splitting a large PR.
+          </p>
+
+          <div class="hero-ribbon">
+            <div class="ribbon-item">
+              <span class="ribbon-value">0-100</span>
+              <span class="ribbon-label">Quality score</span>
+            </div>
+            <div class="ribbon-item">
+              <span class="ribbon-value">Any stack</span>
+              <span class="ribbon-label">Language-agnostic</span>
+            </div>
+            <div class="ribbon-item">
+              <span class="ribbon-value">Fast</span>
+              <span class="ribbon-label">Actionable feedback</span>
+            </div>
+          </div>
+
+          <div class="info-grid">
+            <article class="info-card">
+              <h2>What it does</h2>
+              <p>Reads a GitHub PR link and turns the diff into a simple score with reviewer-friendly insights.</p>
+            </article>
+            <article class="info-card">
+              <h2>What you get</h2>
+              <p>PR score, files changed, lines changed, tests detected, CI status, strengths, and suggestions.</p>
+            </article>
+            <article class="info-card">
+              <h2>Who it is for</h2>
+              <p>Open source contributors, teams, maintainers, and anyone who wants cleaner pull requests.</p>
+            </article>
+          </div>
+
+          <div class="hero-action">
+            <a href="/analyze.html" class="hero-button">Analyze PR</a>
+          </div>
+
+          <div class="trust-strip">
+            <span>Checks PR size</span>
+            <span>Detects tests</span>
+            <span>Reads CI status</span>
+            <span>Flags docs gaps</span>
+            <span>Reviews commit quality</span>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login | ChunkCheck</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="background-blocks" aria-hidden="true">
+      <span class="bg-block block-a"></span>
+      <span class="bg-block block-b"></span>
+      <span class="bg-block block-c"></span>
+      <span class="bg-block block-d"></span>
+      <span class="bg-block block-e"></span>
+      <span class="bg-block block-f"></span>
+      <span class="bg-block block-g"></span>
+    </div>
+    <div class="page-shell">
+      <header class="simple-topbar">
+        <a href="/" class="brand-lockup">
+          <span class="brand-mark" aria-hidden="true">
+            <span class="brand-mark-core"></span>
+          </span>
+          <span class="brand-copy">
+            <strong>ChunkCheck</strong>
+            <small>Block-by-block pull request review</small>
+          </span>
+        </a>
+        <a href="/login.html" class="login-link active" id="top-login-link">Login</a>
+      </header>
+
+      <main class="login-layout">
+        <section class="single-panel single-panel-narrow">
+          <p class="eyebrow">GitHub Login</p>
+          <h1 class="page-title">Save your GitHub profile link.</h1>
+          <p class="section-copy">
+            This is a lightweight login page for now. Enter only your GitHub profile link and the page will remember
+            it locally in your browser.
+          </p>
+
+          <div class="login-note">
+            <span class="login-note-badge">Simple mode</span>
+            <p>No OAuth yet. This page just stores your GitHub profile URL locally so the app can feel account-aware.</p>
+          </div>
+
+          <form id="login-form" class="login-form">
+            <label class="field-label" for="github-link">GitHub Profile Link</label>
+            <div class="stacked-form">
+              <input
+                id="github-link"
+                name="githubLink"
+                type="url"
+                placeholder="https://github.com/your-username"
+                required
+              />
+              <button type="submit" class="login-button">Save GitHub Link</button>
+            </div>
+          </form>
+
+          <div id="login-status" class="login-status" aria-live="polite">Not connected yet.</div>
+        </section>
+      </main>
+    </div>
+
+    <script src="/app.js"></script>
+  </body>
+</html>
