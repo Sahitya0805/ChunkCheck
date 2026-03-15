@@ -72,12 +72,18 @@ Compatibility aliases:
 
 ## Vercel Deployment
 
-ChunkCheck now uses Vercel-native serverless routes:
+ChunkCheck is set up to use Vercel defaults:
 
+- static pages and assets are served from `public/`
+- serverless API routes are served from `api/*.js`
+
+The deployed endpoints are:
+
+- `/`
+- `/analyze.html`
+- `/login.html`
 - `/api/analyze`
 - `/api/health`
-
-Static pages are served from `public/`, and the API runs from `api/*.js`.
 
 Make sure to set this environment variable in Vercel:
 
