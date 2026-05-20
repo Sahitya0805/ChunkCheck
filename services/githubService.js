@@ -1,14 +1,20 @@
-const { Octokit } = require("@octokit/rest");
-
 if (!process.env.GITHUB_TOKEN) {
   console.warn("GITHUB_TOKEN is not set. Public PRs may be rate-limited.");
 }
 
-const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN
-});
+let octokitInstance;
+async function getOctokit() {
+  if (!octokitInstance) {
+    const { Octokit } = await import("@octokit/rest");
+    octokitInstance = new Octokit({
+      auth: process.env.GITHUB_TOKEN
+    });
+  }
+  return octokitInstance;
+}
 
 async function getPullRequestContext(owner, repo, pullNumber) {
+  const octokit = await getOctokit();
   const [prResponse, filesResponse, commitsResponse] = await Promise.all([
     octokit.pulls.get({
       owner,
@@ -46,6 +52,7 @@ async function getPullRequestContext(owner, repo, pullNumber) {
 }
 
 async function paginateFiles(owner, repo, pullNumber) {
+  const octokit = await getOctokit();
   return octokit.paginate(octokit.pulls.listFiles, {
     owner,
     repo,
@@ -55,6 +62,7 @@ async function paginateFiles(owner, repo, pullNumber) {
 }
 
 async function paginateCommits(owner, repo, pullNumber) {
+  const octokit = await getOctokit();
   return octokit.paginate(octokit.pulls.listCommits, {
     owner,
     repo,
