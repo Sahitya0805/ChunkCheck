@@ -1,0 +1,13 @@
+name: 'ChunkCheck PR Analyzer'
+description: 'Analyze GitHub pull requests and return a quality score.'
+inputs:
+  github_token:
+    description: 'GitHub token for API access'
+    required: true
+    default: ${{ github.token }}
+runs:
+  using: 'node20'
+  main: 'dist/index.js'
+branding:
+  icon: 'check-circle'
+  color: 'green'

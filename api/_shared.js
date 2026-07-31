@@ -17,14 +17,22 @@ async function sendAnalysis(req, res) {
     }
 
     const analyzePR = require("../analyzer/prAnalyzer");
-    const result = await analyzePR(parsed.owner, parsed.repo, parsed.prNumber);
+    const token = req.headers["x-github-token"] || process.env.GITHUB_TOKEN;
+    const result = await analyzePR(parsed.owner, parsed.repo, parsed.prNumber, token);
 
     return res.status(200).json(result);
   } catch (error) {
     const statusCode = error.status || 500;
 
+    let message = error.response?.data?.message || error.message || "Failed to analyze pull request";
+    
+    // Clean up GitHub's long rate limit message
+    if (message.includes('(But here')) {
+      message = message.split(' (But here')[0];
+    }
+
     return res.status(statusCode).json({
-      error: error.message || "Failed to analyze pull request"
+      error: message
     });
   }
 }

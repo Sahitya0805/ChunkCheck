@@ -3,26 +3,29 @@ if (!process.env.GITHUB_TOKEN) {
 }
 
 let octokitInstance;
-async function getOctokit() {
+async function getOctokit(token) {
+  if (token) {
+    const { Octokit } = await import("@octokit/rest");
+    return new Octokit({ auth: token });
+  }
+
   if (!octokitInstance) {
     const { Octokit } = await import("@octokit/rest");
-    octokitInstance = new Octokit({
-      auth: process.env.GITHUB_TOKEN
-    });
+    octokitInstance = process.env.GITHUB_TOKEN ? new Octokit({ auth: process.env.GITHUB_TOKEN }) : new Octokit();
   }
   return octokitInstance;
 }
 
-async function getPullRequestContext(owner, repo, pullNumber) {
-  const octokit = await getOctokit();
+async function getPullRequestContext(owner, repo, pullNumber, token) {
+  const octokit = await getOctokit(token);
   const [prResponse, filesResponse, commitsResponse] = await Promise.all([
     octokit.pulls.get({
       owner,
       repo,
       pull_number: pullNumber
     }),
-    paginateFiles(owner, repo, pullNumber),
-    paginateCommits(owner, repo, pullNumber)
+    paginateFiles(owner, repo, pullNumber, token),
+    paginateCommits(owner, repo, pullNumber, token)
   ]);
 
   const headSha = prResponse.data.head.sha;
@@ -51,8 +54,8 @@ async function getPullRequestContext(owner, repo, pullNumber) {
   };
 }
 
-async function paginateFiles(owner, repo, pullNumber) {
-  const octokit = await getOctokit();
+async function paginateFiles(owner, repo, pullNumber, token) {
+  const octokit = await getOctokit(token);
   return octokit.paginate(octokit.pulls.listFiles, {
     owner,
     repo,
@@ -61,8 +64,8 @@ async function paginateFiles(owner, repo, pullNumber) {
   });
 }
 
-async function paginateCommits(owner, repo, pullNumber) {
-  const octokit = await getOctokit();
+async function paginateCommits(owner, repo, pullNumber, token) {
+  const octokit = await getOctokit(token);
   return octokit.paginate(octokit.pulls.listCommits, {
     owner,
     repo,

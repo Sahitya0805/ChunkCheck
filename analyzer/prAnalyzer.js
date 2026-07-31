@@ -3,11 +3,12 @@ const checkCIStatus = require("./ciChecker");
 const scorePR = require("./scoringEngine");
 const detectTests = require("./testDetector");
 
-async function analyzePR(owner, repo, prNumber) {
+async function analyzePR(owner, repo, prNumber, token) {
   const { pr, files, commits, status, checkRuns } = await getPullRequestContext(
     owner,
     repo,
-    prNumber
+    prNumber,
+    token
   );
 
   const filesChanged = files.length;

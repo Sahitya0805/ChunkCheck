@@ -25,6 +25,7 @@ app.get("/api/health", (_req, res) => {
 });
 app.get("/analyze", sendAnalysis);
 app.get("/api/analyze", sendAnalysis);
+app.get("/api/repo-prs", require("./api/repo-prs"));
 
 if (require.main === module) {
   app.listen(port, () => {
