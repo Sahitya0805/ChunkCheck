@@ -20,14 +20,14 @@ async function sendRepoPRs(req, res) {
       state: "closed",
       sort: "updated",
       direction: "desc",
-      per_page: 10
+      per_page: 30
     });
 
     // We only want merged PRs
     const mergedPRs = prsResponse.data.filter(pr => pr.merged_at);
 
-    // Limit to 5 for speed, as each requires multiple API calls
-    const recentPRs = mergedPRs.slice(0, 5);
+    // The 10 most recently merged PRs
+    const recentPRs = mergedPRs.slice(0, 10);
 
     // We'll return just the basics, and the frontend will request analysis
     return res.status(200).json(recentPRs.map(pr => ({

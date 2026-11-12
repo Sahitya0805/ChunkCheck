@@ -6,6 +6,7 @@
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
+    "test": "node --test test/",
     "dev": "node --watch server.js",
     "build:action": "esbuild action/index.js --bundle --platform=node --outfile=dist/index.js"
   },

@@ -7,16 +7,49 @@ document.addEventListener("DOMContentLoaded", () => {
   const prsList = document.getElementById("prsList");
   const prsContainer = document.getElementById("prsContainer");
   
+  const dashError = document.getElementById("dashError");
+  const summaryPanel = document.getElementById("summaryPanel");
   let chartInstance = null;
 
+  const escapeHtml = (value) => String(value ?? "")
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+  const showError = (message) => {
+    dashError.textContent = message;
+    dashError.hidden = !message;
+  };
+
+  // Accepts "owner/repo" or any github.com repo URL.
+  const parseRepo = (value) => {
+    const cleaned = value.trim().replace(/^https?:\/\/(www\.)?github\.com\//i, "").replace(/\.git$/i, "");
+    const [owner, repo] = cleaned.split("/").filter(Boolean);
+    return owner && repo ? { owner, repo } : null;
+  };
+
+  // Run async jobs with a small concurrency limit to stay friendly to the GitHub API.
+  const mapLimited = async (items, limit, fn) => {
+    const results = new Array(items.length);
+    let next = 0;
+    const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+      while (next < items.length) {
+        const index = next++;
+        results[index] = await fn(items[index]);
+      }
+    });
+    await Promise.all(workers);
+    return results;
+  };
+
   analyzeBtn.addEventListener("click", async () => {
-    const repoStr = repoInput.value.trim();
-    if (!repoStr.includes('/')) {
-      alert("Please enter a valid owner/repo string.");
+    showError("");
+    const parsedRepo = parseRepo(repoInput.value);
+    if (!parsedRepo) {
+      showError("Enter a repository as owner/repo, for example checkstyle/checkstyle.");
       return;
     }
-    
-    const [owner, repo] = repoStr.split('/');
+
+    const { owner, repo } = parsedRepo;
     const token = tokenInput.value.trim();
     if (token) localStorage.setItem("chunkcheck_gh_token", token);
     
@@ -24,13 +57,15 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // UI states
     loading.style.display = "block";
+    summaryPanel.hidden = true;
+    analyzeBtn.disabled = true;
     chartPanel.style.display = "none";
     prsList.style.display = "none";
     prsContainer.innerHTML = "";
     
     try {
       // 1. Fetch recent PRs
-      const prsResponse = await fetch(`/api/repo-prs?owner=${owner}&repo=${repo}`, { headers });
+      const prsResponse = await fetch(`/api/repo-prs?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}`, { headers });
       if (!prsResponse.ok) {
         const errData = await prsResponse.json().catch(() => ({}));
         throw new Error(errData.error || `Failed to fetch repository PRs (${prsResponse.status})`);
@@ -39,15 +74,14 @@ document.addEventListener("DOMContentLoaded", () => {
       const prs = await prsResponse.json();
       
       if (prs.length === 0) {
-        alert("No recent merged PRs found.");
-        loading.style.display = "none";
+        showError("No recently merged pull requests were found in this repository.");
         return;
       }
 
       // 2. Analyze each PR
-      const analysisPromises = prs.map(async (pr) => {
+      const results = await mapLimited(prs, 3, async (pr) => {
         try {
-          const res = await fetch(`/api/analyze?owner=${owner}&repo=${repo}&pr=${pr.number}`, { headers });
+          const res = await fetch(`/api/analyze?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repo)}&pr=${pr.number}`, { headers });
           if (!res.ok) {
             const errData = await res.json().catch(() => ({}));
             throw new Error(errData.error || `HTTP error ${res.status}`);
@@ -59,29 +93,28 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
       
-      const results = await Promise.all(analysisPromises);
-      
       // 3. Render chart
       const validResults = results.filter(r => r.score !== null).reverse(); // Oldest to newest
       if (validResults.length > 0) {
         renderChart(validResults);
+        renderSummary(validResults);
         chartPanel.style.display = "block";
       } else {
-        // If all failed, show an error alert, likely rate limiting
+        // Usually the GitHub API rate limit
         const errorMsg = results[0]?.error || "Failed to analyze any PRs";
-        alert(`Analysis failed. Reason: ${errorMsg}`);
+        showError(`Analysis failed: ${errorMsg}. Adding a GitHub token raises the rate limit.`);
       }
       
       // 4. Render list
       renderList(results);
       
-      loading.style.display = "none";
       prsList.style.display = "block";
-      
     } catch (err) {
       console.error(err);
-      alert("An error occurred: " + err.message);
+      showError(err.message);
+    } finally {
       loading.style.display = "none";
+      analyzeBtn.disabled = false;
     }
   });
   
@@ -161,6 +194,25 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   
+  function renderSummary(data) {
+    const scores = data.map((d) => d.score);
+    const avg = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+    const best = data.reduce((a, b) => (b.score > a.score ? b : a));
+    const worst = data.reduce((a, b) => (b.score < a.score ? b : a));
+    const half = Math.floor(scores.length / 2) || 1;
+    const older = scores.slice(0, half);
+    const newer = scores.slice(-half);
+    const mean = (xs) => xs.reduce((a, b) => a + b, 0) / xs.length;
+    const delta = Math.round(mean(newer) - mean(older));
+
+    document.getElementById("avgScore").textContent = `${avg}/100`;
+    document.getElementById("bestScore").textContent = `${best.score} (#${best.number})`;
+    document.getElementById("worstScore").textContent = `${worst.score} (#${worst.number})`;
+    document.getElementById("trendValue").textContent =
+      scores.length < 2 ? "-" : delta > 0 ? `▲ +${delta}` : delta < 0 ? `▼ ${delta}` : "● steady";
+    summaryPanel.hidden = false;
+  }
+
   function renderList(results) {
     results.forEach(pr => {
       const el = document.createElement("div");
@@ -170,12 +222,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (pr.score !== null) {
         scoreHtml = `<div class="pr-score">${pr.score}/100</div>`;
       } else {
-        scoreHtml = `<div class="pr-score" style="background:#8e4f3b; max-width: 300px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="${pr.error}">Failed: ${pr.error}</div>`;
+        scoreHtml = `<div class="pr-score" style="background:#8e4f3b; max-width: 300px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="${escapeHtml(pr.error)}">Failed: ${escapeHtml(pr.error)}</div>`;
       }
       
       el.innerHTML = `
         <div>
-          <a href="${pr.url}" target="_blank">#${pr.number} - ${pr.title}</a>
+          <a href="${escapeHtml(pr.url)}" target="_blank" rel="noopener">#${pr.number} - ${escapeHtml(pr.title)}</a>
           <div style="font-size: 0.8rem; margin-top: 5px; opacity: 0.7;">Merged: ${new Date(pr.merged_at).toLocaleDateString()}</div>
         </div>
         ${scoreHtml}

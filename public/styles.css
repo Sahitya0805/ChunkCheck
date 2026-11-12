@@ -1055,3 +1055,31 @@ input:focus-visible {
   margin: 6px 0 0;
   font-family: "IBM Plex Mono", monospace;
 }
+
+/* README badge */
+.badge-card {
+  margin-bottom: 18px;
+}
+
+.badge-preview {
+  margin: 10px 0;
+  min-height: 20px;
+}
+
+.badge-copy-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.badge-copy-row code {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  background: var(--paper-strong);
+  border: 2px solid var(--border);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
+}

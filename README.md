@@ -1,5 +1,7 @@
 # ChunkCheck
 
+[![CI](https://github.com/Sahitya0805/ChunkCheck/actions/workflows/ci.yml/badge.svg)](https://github.com/Sahitya0805/ChunkCheck/actions/workflows/ci.yml)
+
 ChunkCheck is a small Node.js service and web UI that analyzes a GitHub pull request and returns a quality score from 0 to 100.
 
 **Live demo:** https://chunk-check-hjoq.vercel.app
@@ -13,9 +15,19 @@ ChunkCheck is a small Node.js service and web UI that analyzes a GitHub pull req
 - Scores PR size, tests, CI, commit quality, and documentation signals
 - Returns actionable suggestions in JSON
 - Includes a homepage with a PR URL form and visual results dashboard
-- **Trends dashboard** (`/dashboard.html`) – scores a repository's most recent merged PRs side by side
+- **Score breakdown** – points per category (size 30, tests 20, CI 25, commits 10, docs 15), so the total is always explained
+- **Trends dashboard** (`/dashboard.html`) – scores a repository's 10 most recently merged PRs, with a trend chart, average, best/lowest PR and trend direction
+- **README badge** – `/api/badge?url=<PR URL>` returns an SVG score badge; the report page gives a ready-to-copy Markdown snippet
 - **GitHub Action** – runs on a pull request and posts the score as a PR comment
 - **Chrome extension** – shows the score and suggestions directly on GitHub PR pages
+
+## Tests
+
+```bash
+npm test
+```
+
+Unit tests (Node's built-in test runner) cover the scoring engine, URL parsing, test and CI detection, the badge and the API's input validation. GitHub Actions runs them on every push and also checks that the bundled Action in `dist/` is up to date.
 
 ## Use as a GitHub Action
 

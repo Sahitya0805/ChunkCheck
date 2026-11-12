@@ -23,6 +23,9 @@ const historyList = document.getElementById("history-list");
 const clearHistoryButton = document.getElementById("clear-history-button");
 const historyChart = document.getElementById("history-chart");
 const breakdownList = document.getElementById("breakdown-list");
+const badgeImg = document.getElementById("badge-img");
+const badgeMarkdown = document.getElementById("badge-markdown");
+const copyBadgeButton = document.getElementById("copy-badge-button");
 const submitButton = form ? form.querySelector('button[type="submit"]') : null;
 
 const METRIC_LABELS = {
@@ -133,6 +136,7 @@ function renderResults(payload) {
   renderBadges(payload.metrics, payload.score, payload);
   renderImprovementPlan(payload);
   renderBreakdown(payload.breakdown);
+  renderBadgeSnippet(payload.pullRequest.url);
 
   metricsGrid.innerHTML = "";
   Object.entries(payload.metrics).forEach(([key, value]) => {
@@ -208,6 +212,30 @@ function renderImprovementPlan(payload) {
 
   const plan = buildImprovementPlan(payload);
   fillList(improvementList, plan, "This PR already looks strong. Keep the scope focused and the CI green.");
+}
+
+function renderBadgeSnippet(prUrl) {
+  if (!badgeImg || !badgeMarkdown) {
+    return;
+  }
+
+  const badgeUrl = `${window.location.origin}/api/badge?url=${encodeURIComponent(prUrl)}`;
+  badgeImg.src = badgeUrl;
+  badgeMarkdown.textContent = `[![ChunkCheck score](${badgeUrl})](${prUrl})`;
+}
+
+if (copyBadgeButton && badgeMarkdown) {
+  copyBadgeButton.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(badgeMarkdown.textContent);
+      copyBadgeButton.textContent = "Copied";
+    } catch (_error) {
+      copyBadgeButton.textContent = "Select and copy";
+    }
+    setTimeout(() => {
+      copyBadgeButton.textContent = "Copy";
+    }, 1800);
+  });
 }
 
 function buildImprovementPlan(payload) {

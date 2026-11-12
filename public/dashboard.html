@@ -5,7 +5,7 @@
   <title>ChunkCheck - PR Trends Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="styles.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <style>
     .dashboard-container {
       max-width: 1000px;
@@ -131,6 +131,31 @@
       background: var(--accent);
       color: var(--paper-strong);
     }
+      .dash-error {
+      background: #8e4f3b;
+      color: #fffdf8;
+      padding: 14px 18px;
+      margin-bottom: 20px;
+      border: 3px solid #5e3326;
+    }
+    .summary-panel {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .summary-panel[hidden], .dash-error[hidden] { display: none; }
+    .summary-stat {
+      background: var(--paper);
+      border: 3px solid var(--border);
+      padding: 14px;
+      display: grid;
+      gap: 6px;
+      color: var(--ink);
+    }
+    .summary-stat span { font-size: 0.8rem; color: var(--ink-soft); }
+    .summary-stat strong { font-family: "IBM Plex Mono", monospace; font-size: 1.3rem; }
+    @media (max-width: 700px) { .summary-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
   </style>
 </head>
 <body>
@@ -151,13 +176,22 @@
     </div>
 
     <div class="search-panel" style="flex-wrap: wrap;">
-      <input type="text" id="repoInput" placeholder="e.g. facebook/react" style="flex: 1; min-width: 250px;">
+      <input type="text" id="repoInput" placeholder="owner/repo or a GitHub repo URL, e.g. checkstyle/checkstyle" style="flex: 1; min-width: 250px;">
       <input type="password" id="tokenInput" placeholder="GitHub Token (Optional, for rate limits)" style="flex: 1; min-width: 250px;">
       <button id="analyzeBtn">Analyze Recent PRs</button>
     </div>
 
     <div id="loading" class="loading">
       Fetching and analyzing recent PRs... This may take a minute.
+    </div>
+
+    <div id="dashError" class="dash-error" role="alert" hidden></div>
+
+    <div id="summaryPanel" class="summary-panel" hidden>
+      <div class="summary-stat"><span>Average score</span><strong id="avgScore">-</strong></div>
+      <div class="summary-stat"><span>Best PR</span><strong id="bestScore">-</strong></div>
+      <div class="summary-stat"><span>Lowest PR</span><strong id="worstScore">-</strong></div>
+      <div class="summary-stat"><span>Trend</span><strong id="trendValue">-</strong></div>
     </div>
 
     <div id="chartPanel" class="chart-panel">
