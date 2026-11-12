@@ -28362,25 +28362,27 @@ var require_githubService = __commonJS({
       console.warn("GITHUB_TOKEN is not set. Public PRs may be rate-limited.");
     }
     var octokitInstance;
-    async function getOctokit() {
+    async function getOctokit(token) {
+      if (token) {
+        const { Octokit: Octokit3 } = await Promise.resolve().then(() => (init_dist_src5(), dist_src_exports));
+        return new Octokit3({ auth: token });
+      }
       if (!octokitInstance) {
         const { Octokit: Octokit3 } = await Promise.resolve().then(() => (init_dist_src5(), dist_src_exports));
-        octokitInstance = new Octokit3({
-          auth: process.env.GITHUB_TOKEN
-        });
+        octokitInstance = process.env.GITHUB_TOKEN ? new Octokit3({ auth: process.env.GITHUB_TOKEN }) : new Octokit3();
       }
       return octokitInstance;
     }
-    async function getPullRequestContext(owner, repo, pullNumber) {
-      const octokit = await getOctokit();
+    async function getPullRequestContext(owner, repo, pullNumber, token) {
+      const octokit = await getOctokit(token);
       const [prResponse, filesResponse, commitsResponse] = await Promise.all([
         octokit.pulls.get({
           owner,
           repo,
           pull_number: pullNumber
         }),
-        paginateFiles(owner, repo, pullNumber),
-        paginateCommits(owner, repo, pullNumber)
+        paginateFiles(owner, repo, pullNumber, token),
+        paginateCommits(owner, repo, pullNumber, token)
       ]);
       const headSha = prResponse.data.head.sha;
       const [statusResponse, checkRunsResponse] = await Promise.allSettled([
@@ -28403,8 +28405,8 @@ var require_githubService = __commonJS({
         checkRuns: checkRunsResponse.status === "fulfilled" ? checkRunsResponse.value.data : null
       };
     }
-    async function paginateFiles(owner, repo, pullNumber) {
-      const octokit = await getOctokit();
+    async function paginateFiles(owner, repo, pullNumber, token) {
+      const octokit = await getOctokit(token);
       return octokit.paginate(octokit.pulls.listFiles, {
         owner,
         repo,
@@ -28412,8 +28414,8 @@ var require_githubService = __commonJS({
         per_page: 100
       });
     }
-    async function paginateCommits(owner, repo, pullNumber) {
-      const octokit = await getOctokit();
+    async function paginateCommits(owner, repo, pullNumber, token) {
+      const octokit = await getOctokit(token);
       return octokit.paginate(octokit.pulls.listCommits, {
         owner,
         repo,
@@ -28492,61 +28494,116 @@ var require_scoringEngine = __commonJS({
       /^wip$/i,
       /^stuff$/i
     ];
-    function scorePR({ owner, repo, prNumber, pr, files, commits, metrics }) {
-      const suggestions = [];
-      const strengths = [];
-      const penalties = [];
-      let score = 100;
-      if (metrics.filesChanged > 10) {
-        score -= 10;
-        suggestions.push("Split the PR into smaller changesets.");
-        penalties.push("High file count increases review effort.");
-      } else if (metrics.filesChanged <= 5) {
-        strengths.push("Small file count keeps the PR reviewable.");
-      }
-      if (metrics.linesChanged > 500) {
-        score -= 15;
-        suggestions.push("Reduce the total diff size to make the PR easier to review.");
-        penalties.push("Large diffs are harder to validate and merge safely.");
-      } else if (metrics.linesChanged <= 250) {
-        strengths.push("Diff size is compact and reviewer-friendly.");
-      }
-      if (!metrics.testsDetected && hasSourceCodeChanges(files)) {
-        score -= 15;
-        suggestions.push("Add or update automated tests for the changed behavior.");
-        penalties.push("Source code changed without matching test coverage.");
-      } else if (metrics.testsDetected) {
-        strengths.push("Tests were detected in the PR.");
-      }
-      if (metrics.ciStatus === "failing") {
-        score -= 20;
-        suggestions.push("Fix failing CI checks before requesting review.");
-        penalties.push("CI is currently failing.");
-      } else if (metrics.ciStatus === "passing") {
-        strengths.push("CI checks are passing.");
+    var WEIGHTS = {
+      size: 30,
+      tests: 20,
+      ci: 25,
+      commits: 10,
+      docs: 15
+    };
+    function classifySize(linesChanged, filesChanged) {
+      if (linesChanged > 500 || filesChanged > 20 && linesChanged > 250) return "Large";
+      if (linesChanged > 250 || filesChanged > 10) return "Medium";
+      return "Compact";
+    }
+    function scoreSize({ linesChanged, filesChanged }) {
+      const linePoints = linesChanged <= 250 ? 18 : linesChanged <= 500 ? 12 : linesChanged <= 1e3 ? 6 : 0;
+      const filePoints = filesChanged <= 5 ? 12 : filesChanged <= 10 ? 9 : filesChanged <= 20 ? 5 : 2;
+      const sizeClass = classifySize(linesChanged, filesChanged);
+      const result = { points: linePoints + filePoints, sizeClass };
+      if (sizeClass === "Compact") {
+        result.strength = `Compact diff (${linesChanged} lines across ${filesChanged} files) is easy to review.`;
+      } else if (linesChanged <= 250) {
+        result.strength = `Small line count (${linesChanged} lines) keeps the change easy to read.`;
+        result.risk = `Touches ${filesChanged} files, so reviewers have more places to check.`;
+        result.suggestion = "If the edits are unrelated, group them into smaller PRs by area.";
       } else {
-        suggestions.push("Ensure CI is configured and reports status on the PR.");
+        result.risk = `${linesChanged} lines across ${filesChanged} files takes longer to review safely.`;
+        result.suggestion = "Split the work into smaller PRs that each make one change.";
       }
-      const vagueCommitMessages = commits.filter(
+      return result;
+    }
+    function scoreTests(metrics, files) {
+      if (metrics.testsDetected) {
+        return { points: WEIGHTS.tests, strength: "Tests were added or updated." };
+      }
+      if (!hasSourceCodeChanges(files)) {
+        return { points: WEIGHTS.tests, note: "No source code changed, so tests are not required." };
+      }
+      return {
+        points: 0,
+        risk: "Source code changed without any test changes.",
+        suggestion: "Add a test that proves the changed behavior."
+      };
+    }
+    function scoreCi(ciStatus) {
+      if (ciStatus === "passing") {
+        return { points: WEIGHTS.ci, strength: "All CI checks are passing." };
+      }
+      if (ciStatus === "failing") {
+        return {
+          points: 0,
+          risk: "CI is failing.",
+          suggestion: "Fix the failing CI checks before asking for review."
+        };
+      }
+      if (ciStatus === "pending") {
+        return {
+          points: Math.round(WEIGHTS.ci / 2),
+          note: "CI is still running; re-run the analysis when it finishes."
+        };
+      }
+      return {
+        points: Math.round(WEIGHTS.ci / 2),
+        risk: "No CI status was reported on this PR.",
+        suggestion: "Set up CI so every PR reports a build and test status."
+      };
+    }
+    function scoreCommits(commits) {
+      if (commits.length === 0) {
+        return { points: WEIGHTS.commits };
+      }
+      const vague = commits.filter(
         (commit) => VAGUE_COMMIT_MESSAGE_PATTERNS.some(
           (pattern) => pattern.test(commit.commit.message.split("\n")[0].trim())
         )
       );
-      if (vagueCommitMessages.length > 0) {
-        score -= Math.min(10, vagueCommitMessages.length * 3);
-        suggestions.push("Use clearer commit messages that describe the behavior change.");
-        penalties.push("Some commit messages are too vague.");
-      } else if (commits.length > 0) {
-        strengths.push("Commit messages appear descriptive.");
+      if (vague.length === 0) {
+        return { points: WEIGHTS.commits, strength: "Commit messages are descriptive." };
       }
-      if (needsDocumentation(files) && !hasDocumentationChanges(files)) {
-        score -= 10;
-        suggestions.push("Add documentation or changelog updates for externally visible changes.");
-        penalties.push("The PR may change behavior without documentation updates.");
-      } else if (hasDocumentationChanges(files)) {
-        strengths.push("Documentation updates were included.");
+      return {
+        points: Math.max(0, WEIGHTS.commits - vague.length * 3),
+        risk: `${vague.length} commit message(s) are too vague to explain the change.`,
+        suggestion: "Reword vague commit messages to say what changed and why."
+      };
+    }
+    function scoreDocs(files) {
+      if (hasDocumentationChanges(files)) {
+        return { points: WEIGHTS.docs, strength: "Documentation was updated." };
       }
-      const finalScore = Math.max(0, Math.min(100, score));
+      if (!needsDocumentation(files)) {
+        return { points: WEIGHTS.docs };
+      }
+      return {
+        points: 8,
+        risk: "Code changed but no docs, README or changelog were updated.",
+        suggestion: "If users will notice this change, update the docs or changelog."
+      };
+    }
+    function scorePR({ owner, repo, prNumber, pr, files, commits, metrics }) {
+      const size = scoreSize(metrics);
+      const categories = [
+        { key: "size", label: "Size", ...size },
+        { key: "tests", label: "Tests", ...scoreTests(metrics, files) },
+        { key: "ci", label: "CI", ...scoreCi(metrics.ciStatus) },
+        { key: "commits", label: "Commits", ...scoreCommits(commits) },
+        { key: "docs", label: "Docs", ...scoreDocs(files) }
+      ];
+      const score = Math.max(
+        0,
+        Math.min(100, categories.reduce((sum, category) => sum + category.points, 0))
+      );
+      const pick = (field) => [...new Set(categories.map((c) => c[field]).filter(Boolean))];
       return {
         repository: `${owner}/${repo}`,
         pullRequest: {
@@ -28555,8 +28612,16 @@ var require_scoringEngine = __commonJS({
           url: pr.html_url,
           author: pr.user?.login || null
         },
-        score: finalScore,
-        summary: formatSummary(finalScore),
+        score,
+        summary: formatSummary(score),
+        sizeClass: size.sizeClass,
+        breakdown: categories.map(({ key, label, points, note }) => ({
+          key,
+          label,
+          points,
+          max: WEIGHTS[key],
+          note: note || null
+        })),
         metrics: {
           filesChanged: metrics.filesChanged,
           additions: metrics.additions,
@@ -28566,9 +28631,9 @@ var require_scoringEngine = __commonJS({
           ciStatus: capitalize(metrics.ciStatus),
           commits: commits.length
         },
-        strengths,
-        suggestions: dedupeSuggestions(suggestions),
-        analysis: penalties
+        strengths: pick("strength"),
+        suggestions: pick("suggestion"),
+        analysis: pick("risk")
       };
     }
     function hasSourceCodeChanges(files) {
@@ -28584,9 +28649,6 @@ var require_scoringEngine = __commonJS({
     function needsDocumentation(files) {
       return hasSourceCodeChanges(files) && files.some((file) => file.status !== "removed");
     }
-    function dedupeSuggestions(suggestions) {
-      return [...new Set(suggestions)];
-    }
     function formatSummary(score) {
       if (score >= 90) return "Excellent";
       if (score >= 75) return "Strong";
@@ -28598,6 +28660,8 @@ var require_scoringEngine = __commonJS({
       return value.charAt(0).toUpperCase() + value.slice(1);
     }
     module2.exports = scorePR;
+    module2.exports.classifySize = classifySize;
+    module2.exports.WEIGHTS = WEIGHTS;
   }
 });
 
@@ -28631,11 +28695,12 @@ var require_prAnalyzer = __commonJS({
     var checkCIStatus = require_ciChecker();
     var scorePR = require_scoringEngine();
     var detectTests = require_testDetector();
-    async function analyzePR2(owner, repo, prNumber) {
+    async function analyzePR2(owner, repo, prNumber, token) {
       const { pr, files, commits, status, checkRuns } = await getPullRequestContext(
         owner,
         repo,
-        prNumber
+        prNumber,
+        token
       );
       const filesChanged = files.length;
       const additions = files.reduce((sum, file) => sum + (file.additions || 0), 0);
@@ -28686,10 +28751,16 @@ async function run() {
     const result = await analyzePR(owner, repo, prNumber);
     core.info(`Analysis complete. Score: ${result.score}`);
     const octokit = github.getOctokit(token);
+    const list = (items, fallback) => items && items.length > 0 ? items.map((item) => `- ${item}`).join("\n") : fallback;
+    const breakdownRows = (result.breakdown || []).map((item) => `| ${item.label} | ${item.points} / ${item.max} |`).join("\n");
     const commentBody = `
 ## ChunkCheck PR Analysis
 
-**Score**: ${result.score}/100 - ${result.summary}
+**Score**: ${result.score}/100 - ${result.summary} \xB7 **Size**: ${result.sizeClass || "n/a"}
+
+| Category | Points |
+| --- | --- |
+${breakdownRows}
 
 ### Metrics
 - **Files Changed**: ${result.metrics.filesChanged}
@@ -28699,11 +28770,13 @@ async function run() {
 - **Commits**: ${result.metrics.commits}
 
 ### Strengths
-${result.strengths.length > 0 ? result.strengths.map((s) => `- ${s}`).join("\\n") : "- None identified."}
+${list(result.strengths, "- None identified.")}
 
-### Analysis & Suggestions
-${result.analysis.length > 0 ? result.analysis.map((a) => `- ${a}`).join("\\n") : ""}
-${result.suggestions.length > 0 ? result.suggestions.map((s) => `- ${s}`).join("\\n") : ""}
+### Risk signals
+${list(result.analysis, "- None found.")}
+
+### How to improve
+${list(result.suggestions, "- Nothing to change. Keep the scope focused and CI green.")}
 `;
     const { data: comments } = await octokit.rest.issues.listComments({
       owner,

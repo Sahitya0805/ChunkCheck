@@ -22,6 +22,8 @@ const trendSummary = document.getElementById("trend-summary");
 const historyList = document.getElementById("history-list");
 const clearHistoryButton = document.getElementById("clear-history-button");
 const historyChart = document.getElementById("history-chart");
+const breakdownList = document.getElementById("breakdown-list");
+const submitButton = form ? form.querySelector('button[type="submit"]') : null;
 
 const METRIC_LABELS = {
   filesChanged: "Files Changed",
@@ -76,7 +78,8 @@ if (form && input && statusBox) {
       return;
     }
 
-    setStatus("Analyzing pull request...");
+    setStatus("Fetching files, commits and CI checks from GitHub…");
+    setLoading(true);
 
     if (resultsSection) {
       resultsSection.classList.add("hidden");
@@ -100,6 +103,8 @@ if (form && input && statusBox) {
       }
     } catch (error) {
       setStatus(error.message, true);
+    } finally {
+      setLoading(false);
     }
   });
 }
@@ -112,36 +117,35 @@ function renderResults(payload) {
     !prLink ||
     !metricsGrid ||
     !strengthsList ||
-    !suggestionsList ||
     !analysisList ||
     !resultsSection
   ) {
     return;
   }
 
-  scoreTitle.textContent = `${payload.score} / 100`;
+  scoreTitle.textContent = `${payload.score} out of 100`;
   scoreSummary.textContent = payload.summary;
   repoName.textContent = payload.repository;
   prLink.href = payload.pullRequest.url;
   prLink.textContent = payload.pullRequest.title || "Open pull request";
 
   renderScoreRing(payload.score);
-  renderBadges(payload.metrics, payload.score);
+  renderBadges(payload.metrics, payload.score, payload);
   renderImprovementPlan(payload);
+  renderBreakdown(payload.breakdown);
 
   metricsGrid.innerHTML = "";
   Object.entries(payload.metrics).forEach(([key, value]) => {
     const card = document.createElement("article");
     card.className = "metric-card";
     card.innerHTML = `
-      <div class="metric-label">${METRIC_LABELS[key] || key}</div>
-      <div class="metric-value">${value}</div>
+      <div class="metric-label">${escapeHtml(METRIC_LABELS[key] || key)}</div>
+      <div class="metric-value">${escapeHtml(value)}</div>
     `;
     metricsGrid.appendChild(card);
   });
 
   fillList(strengthsList, payload.strengths, "No strengths were detected yet.");
-  fillList(suggestionsList, payload.suggestions, "No improvements suggested.");
   fillList(analysisList, payload.analysis, "No risk signals found.");
 
   resultsSection.classList.remove("hidden");
@@ -157,17 +161,12 @@ function renderScoreRing(score) {
   scoreRingValue.textContent = score;
 }
 
-function renderBadges(metrics, score) {
+function renderBadges(metrics, score, payload = {}) {
   if (!badgeGrid) {
     return;
   }
 
   const badges = [
-    {
-      label: "Score tier",
-      value: getScoreTierLabel(score),
-      tone: getScoreTier(score)
-    },
     {
       label: "Tests",
       value: metrics.testsDetected,
@@ -185,8 +184,8 @@ function renderBadges(metrics, score) {
     },
     {
       label: "PR Size",
-      value: classifyPrSize(metrics.linesChanged, metrics.filesChanged),
-      tone: metrics.linesChanged > 500 || metrics.filesChanged > 10 ? "warn" : "good"
+      value: payload.sizeClass || classifyPrSize(metrics.linesChanged, metrics.filesChanged),
+      tone: (payload.sizeClass || classifyPrSize(metrics.linesChanged, metrics.filesChanged)) === "Compact" ? "good" : "warn"
     }
   ];
 
@@ -212,36 +211,34 @@ function renderImprovementPlan(payload) {
 }
 
 function buildImprovementPlan(payload) {
-  const items = [];
-  const { metrics } = payload;
+  return (payload.suggestions || []).slice(0, 5);
+}
 
-  if (metrics.testsDetected === "No") {
-    items.push("Add at least one targeted automated test that proves the changed behavior.");
+function renderBreakdown(breakdown) {
+  if (!breakdownList) {
+    return;
   }
 
-  if (metrics.ciStatus !== "Passing") {
-    items.push("Get all CI checks to passing before asking for review.");
-  }
+  breakdownList.innerHTML = "";
 
-  if (Number(metrics.linesChanged) > 500 || Number(metrics.filesChanged) > 10) {
-    items.push("Reduce review scope by splitting this work into smaller PRs.");
-  }
-
-  if (payload.suggestions.some((entry) => entry.toLowerCase().includes("documentation"))) {
-    items.push("Update documentation, changelog, or release notes for visible behavior changes.");
-  }
-
-  if (payload.suggestions.some((entry) => entry.toLowerCase().includes("commit"))) {
-    items.push("Rewrite vague commit messages so each one explains the behavior change clearly.");
-  }
-
-  payload.suggestions.forEach((entry) => {
-    if (items.length < 5 && !items.includes(entry)) {
-      items.push(entry);
-    }
+  (breakdown || []).forEach((item) => {
+    const percent = item.max ? Math.round((item.points / item.max) * 100) : 0;
+    const tone = percent >= 85 ? "good" : percent >= 50 ? "warn" : "danger";
+    const row = document.createElement("div");
+    row.className = "breakdown-row";
+    row.innerHTML = `
+      <div class="breakdown-head">
+        <span>${escapeHtml(item.label)}</span>
+        <strong>${item.points}/${item.max}</strong>
+      </div>
+      <div class="breakdown-track" role="progressbar" aria-label="${escapeHtml(item.label)} score"
+        aria-valuemin="0" aria-valuemax="${item.max}" aria-valuenow="${item.points}">
+        <div class="breakdown-fill ${tone}" style="width:${percent}%"></div>
+      </div>
+      ${item.note ? `<small class="breakdown-note">${escapeHtml(item.note)}</small>` : ""}
+    `;
+    breakdownList.appendChild(row);
   });
-
-  return items.slice(0, 5);
 }
 
 function renderHistory(latestPayload = null) {
@@ -257,11 +254,11 @@ function renderHistory(latestPayload = null) {
         const item = document.createElement("article");
         item.className = "history-item";
         item.innerHTML = `
-          <div class="history-score ${getScoreTier(entry.score)}">${entry.score}</div>
+          <div class="history-score ${getScoreTier(entry.score)}">${Number(entry.score)}</div>
           <div class="history-copy">
-            <strong>${entry.repository}</strong>
-            <span>${entry.title}</span>
-            <small>${formatHistoryMeta(entry)}</small>
+            <strong>${escapeHtml(entry.repository)}</strong>
+            <span>${escapeHtml(entry.title)}</span>
+            <small>${escapeHtml(formatHistoryMeta(entry))}</small>
           </div>
           <div class="history-trend">${index === 0 ? "Latest" : compareEntry(entry, history[index - 1])}</div>
         `;
@@ -377,7 +374,7 @@ function renderHistoryChart(history) {
       <div class="chart-bar-wrap">
         <div class="chart-bar ${getScoreTier(entry.score)}" style="--bar-height:${Math.max(entry.score, 8)}%;"></div>
       </div>
-      <span class="chart-score">${entry.score}</span>
+      <span class="chart-score">${Number(entry.score)}</span>
     `;
     historyChart.appendChild(column);
   });
@@ -415,6 +412,25 @@ function fillList(element, items, fallbackText) {
     item.textContent = entry;
     element.appendChild(item);
   });
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function setLoading(isLoading) {
+  if (!submitButton) {
+    return;
+  }
+
+  submitButton.disabled = isLoading;
+  submitButton.classList.toggle("is-loading", isLoading);
+  submitButton.textContent = isLoading ? "Analyzing…" : "Analyze PR";
 }
 
 function setStatus(message, isError = false) {

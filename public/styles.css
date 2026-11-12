@@ -656,10 +656,10 @@ input[type="url"]::placeholder {
   font-size: 0.8rem;
 }
 
-#score-title {
+#score-summary {
   margin: 0;
   font-family: "Press Start 2P", monospace;
-  font-size: clamp(1.4rem, 3vw, 2.1rem);
+  font-size: clamp(1rem, 2.4vw, 1.6rem);
   line-height: 1.5;
   color: #223039;
   text-transform: uppercase;
@@ -981,4 +981,77 @@ input[type="url"]::placeholder {
   .badge-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Score breakdown */
+.breakdown-list {
+  display: grid;
+  gap: 12px;
+}
+
+.breakdown-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 0.92rem;
+  margin-bottom: 4px;
+}
+
+.breakdown-head strong {
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.breakdown-track {
+  height: 12px;
+  background: var(--paper-strong);
+  border: 2px solid var(--border);
+}
+
+.breakdown-fill {
+  height: 100%;
+  transition: width 0.6s ease;
+}
+
+.breakdown-fill.good {
+  background: var(--accent);
+}
+
+.breakdown-fill.warn {
+  background: var(--gold);
+}
+
+.breakdown-fill.danger {
+  background: var(--danger);
+}
+
+.breakdown-note {
+  display: block;
+  margin-top: 4px;
+  color: var(--ink-soft);
+  font-size: 0.8rem;
+}
+
+button:disabled,
+button.is-loading {
+  cursor: progress;
+  opacity: 0.75;
+  transform: none;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .breakdown-fill {
+    transition: none;
+  }
+}
+
+#score-title {
+  margin: 6px 0 0;
+  font-family: "IBM Plex Mono", monospace;
 }

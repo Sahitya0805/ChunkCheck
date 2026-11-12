@@ -22,13 +22,20 @@ async function sendAnalysis(req, res) {
 
     return res.status(200).json(result);
   } catch (error) {
-    const statusCode = error.status || 500;
+    const statusCode =
+      error.status || (/Unable to parse PR URL/.test(error.message || "") ? 400 : 500);
 
     let message = error.response?.data?.message || error.message || "Failed to analyze pull request";
     
     // Clean up GitHub's long rate limit message
     if (message.includes('(But here')) {
       message = message.split(' (But here')[0];
+    }
+
+    if (statusCode === 404) {
+      message = "Pull request not found. Check the URL — private repositories need a GitHub token on the server.";
+    } else if (statusCode === 403 && /rate limit/i.test(message)) {
+      message = "GitHub's API rate limit was reached. Please try again in a few minutes.";
     }
 
     return res.status(statusCode).json({

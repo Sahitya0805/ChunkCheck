@@ -28,10 +28,20 @@ async function run() {
     const octokit = github.getOctokit(token);
     
     // Format the comment
+    const list = (items, fallback) =>
+      items && items.length > 0 ? items.map((item) => `- ${item}`).join('\n') : fallback;
+    const breakdownRows = (result.breakdown || [])
+      .map((item) => `| ${item.label} | ${item.points} / ${item.max} |`)
+      .join('\n');
+
     const commentBody = `
 ## ChunkCheck PR Analysis
 
-**Score**: ${result.score}/100 - ${result.summary}
+**Score**: ${result.score}/100 - ${result.summary} · **Size**: ${result.sizeClass || 'n/a'}
+
+| Category | Points |
+| --- | --- |
+${breakdownRows}
 
 ### Metrics
 - **Files Changed**: ${result.metrics.filesChanged}
@@ -41,11 +51,13 @@ async function run() {
 - **Commits**: ${result.metrics.commits}
 
 ### Strengths
-${result.strengths.length > 0 ? result.strengths.map(s => `- ${s}`).join('\\n') : '- None identified.'}
+${list(result.strengths, '- None identified.')}
 
-### Analysis & Suggestions
-${result.analysis.length > 0 ? result.analysis.map(a => `- ${a}`).join('\\n') : ''}
-${result.suggestions.length > 0 ? result.suggestions.map(s => `- ${s}`).join('\\n') : ''}
+### Risk signals
+${list(result.analysis, '- None found.')}
+
+### How to improve
+${list(result.suggestions, '- Nothing to change. Keep the scope focused and CI green.')}
 `;
 
     // Find if we already commented
