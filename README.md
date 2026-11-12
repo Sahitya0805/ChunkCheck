@@ -2,6 +2,10 @@
 
 ChunkCheck is a small Node.js service and web UI that analyzes a GitHub pull request and returns a quality score from 0 to 100.
 
+**Live demo:** https://chunk-check-hjoq.vercel.app
+
+**Tech stack:** Node.js · Express · Octokit (GitHub REST API) · GitHub Actions · Chrome Extension (Manifest V3) · esbuild · Vercel serverless
+
 ## Features
 
 - Accepts a GitHub PR URL or `owner/repo/pr` query params
@@ -9,6 +13,36 @@ ChunkCheck is a small Node.js service and web UI that analyzes a GitHub pull req
 - Scores PR size, tests, CI, commit quality, and documentation signals
 - Returns actionable suggestions in JSON
 - Includes a homepage with a PR URL form and visual results dashboard
+- **Trends dashboard** (`/dashboard.html`) – scores a repository's most recent merged PRs side by side
+- **GitHub Action** – runs on a pull request and posts the score as a PR comment
+- **Chrome extension** – shows the score and suggestions directly on GitHub PR pages
+
+## Use as a GitHub Action
+
+```yaml
+name: ChunkCheck
+on: pull_request
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  score:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: Sahitya0805/ChunkCheck@main
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+The action is bundled into `dist/index.js` with `npm run build:action`.
+
+## Chrome extension
+
+1. Open `chrome://extensions` and turn on **Developer mode**.
+2. Click **Load unpacked** and select the `extension/` folder.
+3. Open any GitHub pull request page.
 
 ## Setup
 
