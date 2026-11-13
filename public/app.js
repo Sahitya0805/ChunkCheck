@@ -159,6 +159,7 @@ function renderResults(payload) {
   renderImprovementPlan(payload);
   renderBreakdown(payload.breakdown);
   renderBadgeSnippet(payload.pullRequest.url);
+  renderStamp(payload.score);
   renderLargestFiles(payload.largestFiles);
   latestPayload = payload;
 
@@ -252,6 +253,37 @@ function renderImprovementPlan(payload) {
 
   const plan = buildImprovementPlan(payload);
   fillList(improvementList, plan, "Nothing obvious to fix. Nice.");
+  if (plan.length) {
+    improvementList.querySelectorAll("li").forEach((li) => {
+      li.tabIndex = 0;
+      li.setAttribute("role", "checkbox");
+      li.setAttribute("aria-checked", "false");
+      const toggle = () => {
+        const done = li.classList.toggle("done");
+        li.setAttribute("aria-checked", String(done));
+      };
+      li.addEventListener("click", toggle);
+      li.addEventListener("keydown", (event) => {
+        if (event.key === " " || event.key === "Enter") {
+          event.preventDefault();
+          toggle();
+        }
+      });
+    });
+  }
+}
+
+// A rubber-stamp verdict on the score card, re-stamped on every report.
+function renderStamp(score) {
+  const card = document.querySelector(".summary-card");
+  if (!card) return;
+  card.querySelector(".review-stamp")?.remove();
+  const tier = getScoreTier(score);
+  const stamp = document.createElement("div");
+  stamp.className = `review-stamp ${tier}`;
+  stamp.setAttribute("aria-hidden", "true");
+  stamp.textContent = tier === "good" ? "Ship it" : tier === "warn" ? "Almost" : "Not yet";
+  card.appendChild(stamp);
 }
 
 function renderLargestFiles(files) {

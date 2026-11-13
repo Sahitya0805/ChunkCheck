@@ -138,8 +138,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const scores = data.map(d => d.score);
     
     // Set chart defaults for dark mode
-    Chart.defaults.color = '#8b98a9';
-    Chart.defaults.font.family = '"Inter", system-ui, sans-serif';
+    Chart.defaults.color = '#3d3a34';
+    Chart.defaults.font.family = '"Space Mono", monospace';
     
     chartInstance = new Chart(ctx, {
       type: 'line',
@@ -148,15 +148,15 @@ document.addEventListener("DOMContentLoaded", () => {
         datasets: [{
           label: 'PR Quality Score',
           data: scores,
-          borderColor: '#3fb950',
-          backgroundColor: 'rgba(63, 185, 80, 0.12)',
+          borderColor: '#141414',
+          backgroundColor: 'rgba(255, 225, 77, 0.55)',
           borderWidth: 3,
-          pointBackgroundColor: '#3fb950',
-          pointBorderColor: '#0b0f14',
+          pointBackgroundColor: '#ffe14d',
+          pointBorderColor: '#141414',
           pointRadius: 6,
           pointHoverRadius: 8,
           fill: true,
-          tension: 0.3
+          tension: 0
         }]
       },
       options: {
@@ -166,10 +166,10 @@ document.addEventListener("DOMContentLoaded", () => {
             display: false
           },
           tooltip: {
-            backgroundColor: 'rgba(18, 24, 33, 0.95)',
-            titleColor: '#e6edf3',
-            bodyColor: '#b6c2cf',
-            borderColor: '#33435a',
+            backgroundColor: '#141414',
+            titleColor: '#ffe14d',
+            bodyColor: '#f4efe4',
+            borderColor: '#141414',
             borderWidth: 1,
             padding: 10,
             displayColors: false,
@@ -190,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
             beginAtZero: true,
             max: 100,
             grid: {
-              color: 'rgba(51, 67, 90, 0.5)'
+              color: 'rgba(20, 20, 20, 0.12)'
             }
           },
           x: {
@@ -231,7 +231,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (pr.score !== null) {
         scoreHtml = `<div class="pr-score">${pr.score}/100</div>`;
       } else {
-        scoreHtml = `<div class="pr-score" style="background:rgba(248,81,73,0.14); color:#f85149; max-width: 300px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="${escapeHtml(pr.error)}">Failed: ${escapeHtml(pr.error)}</div>`;
+        scoreHtml = `<div class="pr-score" style="background:#ffd0d0; max-width: 300px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="${escapeHtml(pr.error)}">Failed: ${escapeHtml(pr.error)}</div>`;
       }
       
       el.innerHTML = `

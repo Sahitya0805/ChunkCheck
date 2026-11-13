@@ -6,9 +6,9 @@
     <title>ChunkCheck</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
-    <meta name="theme-color" content="#0b0f14" />
-    <link rel="stylesheet" href="/styles.css?v=3" />
+    <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+    <meta name="theme-color" content="#f4efe4" />
+    <link rel="stylesheet" href="/styles.css?v=6" />
   </head>
   <body>
     <div class="page-shell">
@@ -19,7 +19,7 @@
           </span>
           <span class="brand-copy">
             <strong>ChunkCheck</strong>
-            <small>A second look before review</small>
+            <small>// a second look before review</small>
           </span>
         </a>
         <nav class="top-nav" aria-label="Main">
@@ -31,7 +31,11 @@
 
       <main class="home-layout">
         <section class="home-hero">
-          <h1>Is this pull request ready for review?</h1>
+          <aside class="hero-note" aria-label="Note">
+            <strong>reviewer’s note:</strong>
+            a 70-line PR that touches 23 files still takes a while to review. ChunkCheck notices that kind of thing.
+          </aside>
+          <h1>Is this pull request <span class="mark">ready</span> for <span class="scribble">review?</span></h1>
           <p class="hero-text">
             Paste a GitHub PR link. ChunkCheck reads the diff, the tests, the CI checks and the commit messages,
             and tells you what a reviewer is likely to push back on, before you ask anyone to look at it.
@@ -51,6 +55,13 @@
             <a class="example-chip" href="/analyze.html?url=https%3A%2F%2Fgithub.com%2Fnodejs%2Fnode%2Fpull%2F67393">node #67393</a>
           </div>
         </section>
+
+        <div class="ticker" aria-hidden="true">
+          <div class="ticker-track">
+            <span>diff size</span><span>files touched</span><span>tests changed?</span><span>CI green?</span><span>docs updated?</span><span>“wip” commits</span><span>biggest files</span>
+            <span>diff size</span><span>files touched</span><span>tests changed?</span><span>CI green?</span><span>docs updated?</span><span>“wip” commits</span><span>biggest files</span>
+          </div>
+        </div>
 
         <section class="home-section">
           <h2>How the score works</h2>
@@ -82,9 +93,9 @@
               <li>An <strong>SVG badge</strong> you can drop into a README.</li>
             </ul>
           </div>
-          <div>
+          <div class="caveat-card">
             <h2>Things it can’t tell you</h2>
-            <p class="section-copy">
+            <p>
               It doesn’t read your code for bugs or judge the design. A PR can score 100 and still be wrong.
               Think of it as the checklist a maintainer runs through in the first minute.
             </p>
