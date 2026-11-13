@@ -1,3 +1,11 @@
+// Highlight the current page in the top navigation
+(function markCurrentNav() {
+  const page = window.location.pathname.includes("dashboard") ? "dashboard" : window.location.pathname.includes("analyze") ? "analyze" : null;
+  if (!page) return;
+  const link = document.querySelector(`.top-nav a[data-nav="${page}"]`);
+  if (link) link.setAttribute("aria-current", "page");
+})();
+
 document.addEventListener("DOMContentLoaded", () => {
   const analyzeBtn = document.getElementById("analyzeBtn");
   const repoInput = document.getElementById("repoInput");
@@ -96,9 +104,10 @@ document.addEventListener("DOMContentLoaded", () => {
       // 3. Render chart
       const validResults = results.filter(r => r.score !== null).reverse(); // Oldest to newest
       if (validResults.length > 0) {
+        // Show the panel first so Chart.js can measure its real size
+        chartPanel.style.display = "block";
         renderChart(validResults);
         renderSummary(validResults);
-        chartPanel.style.display = "block";
       } else {
         // Usually the GitHub API rate limit
         const errorMsg = results[0]?.error || "Failed to analyze any PRs";
@@ -129,8 +138,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const scores = data.map(d => d.score);
     
     // Set chart defaults for dark mode
-    Chart.defaults.color = '#d8d3bf';
-    Chart.defaults.font.family = '"IBM Plex Sans", sans-serif';
+    Chart.defaults.color = '#8b98a9';
+    Chart.defaults.font.family = '"Inter", system-ui, sans-serif';
     
     chartInstance = new Chart(ctx, {
       type: 'line',
@@ -139,11 +148,11 @@ document.addEventListener("DOMContentLoaded", () => {
         datasets: [{
           label: 'PR Quality Score',
           data: scores,
-          borderColor: '#4f6f3a',
-          backgroundColor: 'rgba(79, 111, 58, 0.2)',
+          borderColor: '#3fb950',
+          backgroundColor: 'rgba(63, 185, 80, 0.12)',
           borderWidth: 3,
-          pointBackgroundColor: '#b48e3d',
-          pointBorderColor: '#1a1f19',
+          pointBackgroundColor: '#3fb950',
+          pointBorderColor: '#0b0f14',
           pointRadius: 6,
           pointHoverRadius: 8,
           fill: true,
@@ -157,10 +166,10 @@ document.addEventListener("DOMContentLoaded", () => {
             display: false
           },
           tooltip: {
-            backgroundColor: 'rgba(26, 31, 25, 0.9)',
-            titleColor: '#efe9d7',
-            bodyColor: '#d8d3bf',
-            borderColor: '#5f6c4f',
+            backgroundColor: 'rgba(18, 24, 33, 0.95)',
+            titleColor: '#e6edf3',
+            bodyColor: '#b6c2cf',
+            borderColor: '#33435a',
             borderWidth: 1,
             padding: 10,
             displayColors: false,
@@ -181,7 +190,7 @@ document.addEventListener("DOMContentLoaded", () => {
             beginAtZero: true,
             max: 100,
             grid: {
-              color: 'rgba(95, 108, 79, 0.2)'
+              color: 'rgba(51, 67, 90, 0.5)'
             }
           },
           x: {
@@ -222,7 +231,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (pr.score !== null) {
         scoreHtml = `<div class="pr-score">${pr.score}/100</div>`;
       } else {
-        scoreHtml = `<div class="pr-score" style="background:#8e4f3b; max-width: 300px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="${escapeHtml(pr.error)}">Failed: ${escapeHtml(pr.error)}</div>`;
+        scoreHtml = `<div class="pr-score" style="background:rgba(248,81,73,0.14); color:#f85149; max-width: 300px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;" title="${escapeHtml(pr.error)}">Failed: ${escapeHtml(pr.error)}</div>`;
       }
       
       el.innerHTML = `

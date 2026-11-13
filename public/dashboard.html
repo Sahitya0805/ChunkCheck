@@ -4,180 +4,43 @@
   <meta charset="UTF-8">
   <title>ChunkCheck - PR Trends Dashboard</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <style>
-    .dashboard-container {
-      max-width: 1000px;
-      margin: 40px auto;
-      padding: 0 20px;
-      position: relative;
-      z-index: 10;
-    }
-    .dashboard-header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
-    .dashboard-header h1 {
-      color: var(--paper-strong);
-      font-size: 3rem;
-      margin-bottom: 10px;
-      text-shadow: 2px 2px 0 var(--border);
-    }
-    .search-panel {
-      background: rgba(26, 31, 25, 0.7);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 2px solid var(--border);
-      border-radius: 16px;
-      padding: 30px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      margin-bottom: 40px;
-      display: flex;
-      gap: 15px;
-    }
-    .search-panel input {
-      flex: 1;
-      background: rgba(15, 17, 16, 0.8);
-      border: 2px solid var(--border);
-      color: var(--paper-strong);
-      padding: 15px 20px;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      font-family: inherit;
-    }
-    .search-panel button {
-      background: var(--accent);
-      color: var(--paper-strong);
-      border: 2px solid var(--border);
-      padding: 15px 30px;
-      border-radius: 8px;
-      font-size: 1.1rem;
-      font-weight: bold;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-    .search-panel button:hover {
-      background: var(--accent-strong);
-      transform: translateY(-2px);
-    }
-    .chart-panel {
-      background: rgba(26, 31, 25, 0.7);
-      backdrop-filter: blur(10px);
-      border: 2px solid var(--border);
-      border-radius: 16px;
-      padding: 30px;
-      margin-bottom: 40px;
-      display: none;
-    }
-    .prs-list {
-      display: none;
-      background: rgba(26, 31, 25, 0.7);
-      backdrop-filter: blur(10px);
-      border: 2px solid var(--border);
-      border-radius: 16px;
-      padding: 30px;
-    }
-    .pr-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 15px;
-      border-bottom: 1px solid var(--border);
-      color: var(--paper);
-    }
-    .pr-item:last-child {
-      border-bottom: none;
-    }
-    .pr-item a {
-      color: var(--gold);
-      text-decoration: none;
-      font-weight: bold;
-    }
-    .pr-item a:hover {
-      text-decoration: underline;
-    }
-    .pr-score {
-      background: var(--accent-strong);
-      padding: 5px 12px;
-      border-radius: 20px;
-      font-weight: bold;
-      color: var(--paper-strong);
-    }
-    .loading {
-      text-align: center;
-      color: var(--accent-soft);
-      font-size: 1.2rem;
-      display: none;
-      margin: 40px 0;
-    }
-    
-    nav {
-      position: absolute;
-      top: 20px;
-      left: 20px;
-      z-index: 20;
-    }
-    nav a {
-      color: var(--paper);
-      text-decoration: none;
-      font-weight: bold;
-      padding: 10px 20px;
-      background: rgba(26, 31, 25, 0.7);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-    }
-    nav a:hover {
-      background: var(--accent);
-      color: var(--paper-strong);
-    }
-      .dash-error {
-      background: #8e4f3b;
-      color: #fffdf8;
-      padding: 14px 18px;
-      margin-bottom: 20px;
-      border: 3px solid #5e3326;
-    }
-    .summary-panel {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-    .summary-panel[hidden], .dash-error[hidden] { display: none; }
-    .summary-stat {
-      background: var(--paper);
-      border: 3px solid var(--border);
-      padding: 14px;
-      display: grid;
-      gap: 6px;
-      color: var(--ink);
-    }
-    .summary-stat span { font-size: 0.8rem; color: var(--ink-soft); }
-    .summary-stat strong { font-family: "IBM Plex Mono", monospace; font-size: 1.3rem; }
-    @media (max-width: 700px) { .summary-panel { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+    <meta name="theme-color" content="#0b0f14" />
+    <link rel="stylesheet" href="/styles.css?v=2" />
 </head>
 <body>
-  <div class="background-blocks">
-    <div class="bg-block block-a"></div>
-    <div class="bg-block block-b"></div>
-    <div class="bg-block block-c"></div>
+  <div class="page-shell">
+      <header class="simple-topbar">
+        <a href="/" class="brand-lockup">
+          <span class="brand-mark" aria-hidden="true">
+            <span class="brand-mark-core"></span>
+          </span>
+          <span class="brand-copy">
+            <strong>ChunkCheck</strong>
+            <small>Pull request quality, explained</small>
+          </span>
+        </a>
+        <nav class="top-nav" aria-label="Main">
+          <a href="/analyze.html" data-nav="analyze">Analyze</a>
+          <a href="/dashboard.html" data-nav="dashboard">Trends</a>
+          <a href="/login.html" class="login-link" id="top-login-link">Login</a>
+        </nav>
+      </header>
   </div>
-
-  <nav>
-    <a href="/">&larr; Back to Home</a>
-  </nav>
 
   <div class="dashboard-container">
     <div class="dashboard-header">
-      <h1>PR Quality Trends</h1>
-      <p style="color: var(--paper)">Track your team's code quality over time.</p>
+      <p class="eyebrow">Repository trends</p>
+      <h1>PR quality over time</h1>
+      <p class="section-copy">Score a repository's 10 most recently merged pull requests and see whether quality is going up or down.</p>
     </div>
 
-    <div class="search-panel" style="flex-wrap: wrap;">
-      <input type="text" id="repoInput" placeholder="owner/repo or a GitHub repo URL, e.g. checkstyle/checkstyle" style="flex: 1; min-width: 250px;">
-      <input type="password" id="tokenInput" placeholder="GitHub Token (Optional, for rate limits)" style="flex: 1; min-width: 250px;">
+    <div class="search-panel">
+      <input type="text" id="repoInput" placeholder="owner/repo or a GitHub repo URL, e.g. checkstyle/checkstyle">
+      <input type="password" id="tokenInput" placeholder="GitHub Token (Optional, for rate limits)">
       <button id="analyzeBtn">Analyze Recent PRs</button>
     </div>
 
@@ -199,7 +62,7 @@
     </div>
 
     <div id="prsList" class="prs-list">
-      <h2 style="color: var(--paper-strong); margin-top: 0;">Recent PRs</h2>
+      <h2>Recent pull requests</h2>
       <div id="prsContainer"></div>
     </div>
   </div>

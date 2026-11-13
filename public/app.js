@@ -1,3 +1,11 @@
+// Highlight the current page in the top navigation
+(function markCurrentNav() {
+  const page = window.location.pathname.includes("dashboard") ? "dashboard" : window.location.pathname.includes("analyze") ? "analyze" : null;
+  if (!page) return;
+  const link = document.querySelector(`.top-nav a[data-nav="${page}"]`);
+  if (link) link.setAttribute("aria-current", "page");
+})();
+
 const form = document.getElementById("analyze-form");
 const input = document.getElementById("pr-url");
 const statusBox = document.getElementById("status");
