@@ -6,6 +6,14 @@ ChunkCheck is a small Node.js service and web UI that analyzes a GitHub pull req
 
 **Live demo:** https://chunk-check-hjoq.vercel.app
 
+## Screenshots
+
+| Home | Report |
+| --- | --- |
+| ![ChunkCheck home page](docs/screenshots/home.jpg) | ![A ChunkCheck report with the score breakdown and review stamp](docs/screenshots/report.jpg) |
+
+The UI is a deliberately hand-made "code review zine": paper and ink, highlighter and red-pen marks, and a rubber-stamp verdict (Ship it / Almost / Not yet) on every report.
+
 **Tech stack:** Node.js · Express · Octokit (GitHub REST API) · GitHub Actions · Chrome Extension (Manifest V3) · esbuild · Vercel serverless
 
 ## Features
