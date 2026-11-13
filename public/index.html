@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
     <meta name="theme-color" content="#0b0f14" />
-    <link rel="stylesheet" href="/styles.css?v=2" />
+    <link rel="stylesheet" href="/styles.css?v=3" />
   </head>
   <body>
     <div class="page-shell">
@@ -19,7 +19,7 @@
           </span>
           <span class="brand-copy">
             <strong>ChunkCheck</strong>
-            <small>Pull request quality, explained</small>
+            <small>A second look before review</small>
           </span>
         </a>
         <nav class="top-nav" aria-label="Main">
@@ -31,72 +31,71 @@
 
       <main class="home-layout">
         <section class="home-hero">
-          <p class="eyebrow">PR Quality Intelligence</p>
-          <h1>ChunkCheck helps developers understand whether a GitHub pull request is ready for review.</h1>
-          <p class="hero-text hero-text-wide">
-            The website analyzes any GitHub Pull Request and returns a quality score from 0 to 100. It checks files
-            changed, lines changed, test presence, CI status, documentation signals, and commit quality, then gives
-            clear suggestions like adding tests or splitting a large PR.
+          <h1>Is this pull request ready for review?</h1>
+          <p class="hero-text">
+            Paste a GitHub PR link. ChunkCheck reads the diff, the tests, the CI checks and the commit messages,
+            and tells you what a reviewer is likely to push back on, before you ask anyone to look at it.
           </p>
 
           <form class="quick-analyze" action="/analyze.html" method="get">
-            <label class="field-label" for="quick-pr-url">GitHub Pull Request URL</label>
+            <label class="field-label" for="quick-pr-url">Pull request link</label>
             <div class="quick-analyze-row">
               <input id="quick-pr-url" name="url" type="url" required placeholder="https://github.com/owner/repo/pull/123" />
-              <button type="submit">Analyze PR</button>
+              <button type="submit">Check it</button>
             </div>
           </form>
           <div class="example-row" aria-label="Example pull requests">
-            <span class="example-label">Try an example:</span>
+            <span class="example-label">Or try one of these:</span>
             <a class="example-chip" href="/analyze.html?url=https%3A%2F%2Fgithub.com%2Fcheckstyle%2Fcheckstyle%2Fpull%2F21799">checkstyle #21799</a>
             <a class="example-chip" href="/analyze.html?url=https%3A%2F%2Fgithub.com%2Fexpressjs%2Fexpress%2Fpull%2F6097">express #6097</a>
             <a class="example-chip" href="/analyze.html?url=https%3A%2F%2Fgithub.com%2Fnodejs%2Fnode%2Fpull%2F67393">node #67393</a>
           </div>
+        </section>
 
-          <div class="hero-ribbon">
-            <div class="ribbon-item">
-              <span class="ribbon-value">0-100</span>
-              <span class="ribbon-label">Quality score</span>
-            </div>
-            <div class="ribbon-item">
-              <span class="ribbon-value">Any stack</span>
-              <span class="ribbon-label">Language-agnostic</span>
-            </div>
-            <div class="ribbon-item">
-              <span class="ribbon-value">Fast</span>
-              <span class="ribbon-label">Actionable feedback</span>
-            </div>
+        <section class="home-section">
+          <h2>How the score works</h2>
+          <p class="section-copy">
+            Every PR starts with 100 points split across five things reviewers care about. Nothing is a black box:
+            the report shows exactly where points were lost.
+          </p>
+          <table class="score-table">
+            <thead>
+              <tr><th scope="col">Category</th><th scope="col">Points</th><th scope="col">Loses points when…</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Size</td><td>30</td><td>the diff is over 250 lines, or touches more than 5 files</td></tr>
+              <tr><td>CI</td><td>25</td><td>checks are failing, or the repo reports no CI at all</td></tr>
+              <tr><td>Tests</td><td>20</td><td>source code changed but no test file did</td></tr>
+              <tr><td>Docs</td><td>15</td><td>behaviour changed without a README, docs or changelog update</td></tr>
+              <tr><td>Commits</td><td>10</td><td>commit messages are things like “fix”, “wip” or “update”</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <section class="home-section home-two-col">
+          <div>
+            <h2>Other ways to use it</h2>
+            <ul class="plain-list">
+              <li><a href="/dashboard.html">Trends</a> scores a repo’s last 10 merged PRs, so you can see if things are getting better.</li>
+              <li>A <strong>GitHub Action</strong> posts the report as a comment on every new PR.</li>
+              <li>A <strong>Chrome extension</strong> shows the score right on the GitHub PR page.</li>
+              <li>An <strong>SVG badge</strong> you can drop into a README.</li>
+            </ul>
           </div>
-
-          <div class="info-grid">
-            <article class="info-card">
-              <h2>What it does</h2>
-              <p>Reads a GitHub PR link and turns the diff into a simple score with reviewer-friendly insights.</p>
-            </article>
-            <article class="info-card">
-              <h2>What you get</h2>
-              <p>PR score, files changed, lines changed, tests detected, CI status, strengths, and suggestions.</p>
-            </article>
-            <article class="info-card">
-              <h2>Who it is for</h2>
-              <p>Open source contributors, teams, maintainers, and anyone who wants cleaner pull requests.</p>
-            </article>
-          </div>
-
-          <div class="hero-action">
-            <a href="/analyze.html" class="hero-button">Open the analyzer</a>
-            <a href="/dashboard.html" class="hero-button hero-button-secondary">View Trends Dashboard</a>
-          </div>
-
-          <div class="trust-strip">
-            <span>Checks PR size</span>
-            <span>Detects tests</span>
-            <span>Reads CI status</span>
-            <span>Flags docs gaps</span>
-            <span>Reviews commit quality</span>
+          <div>
+            <h2>Things it can’t tell you</h2>
+            <p class="section-copy">
+              It doesn’t read your code for bugs or judge the design. A PR can score 100 and still be wrong.
+              Think of it as the checklist a maintainer runs through in the first minute.
+            </p>
           </div>
         </section>
       </main>
+
+      <footer class="site-footer">
+        <span>Made by Sahitya Singh</span>
+        <a href="https://github.com/Sahitya0805/ChunkCheck">Source on GitHub</a>
+      </footer>
     </div>
 
     <script src="/app.js"></script>

@@ -98,7 +98,7 @@ if (form && input && statusBox) {
       return;
     }
 
-    setStatus("Fetching files, commits and CI checks from GitHub…");
+    setStatus("Reading the files, commits and CI checks from GitHub…");
     setLoading(true);
 
     if (resultsSection) {
@@ -121,7 +121,7 @@ if (form && input && statusBox) {
       }
       renderResults(payload);
       renderHistory(payload);
-      setStatus("Analysis complete. Scroll down to review the report.");
+      setStatus("");
 
       if (resultsSection) {
         resultsSection.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -251,7 +251,7 @@ function renderImprovementPlan(payload) {
   }
 
   const plan = buildImprovementPlan(payload);
-  fillList(improvementList, plan, "This PR already looks strong. Keep the scope focused and the CI green.");
+  fillList(improvementList, plan, "Nothing obvious to fix. Nice.");
 }
 
 function renderLargestFiles(files) {
@@ -389,7 +389,7 @@ function renderHistory(latestPayload = null) {
     historyList.innerHTML = "";
 
     if (history.length === 0) {
-      historyList.innerHTML = `<div class="history-empty">No PR history yet. Analyze a PR to start tracking your progress.</div>`;
+      historyList.innerHTML = `<div class="history-empty">Nothing here yet.</div>`;
     } else {
       history.forEach((entry, index) => {
         const item = document.createElement("article");
@@ -417,7 +417,7 @@ function renderHistory(latestPayload = null) {
 
 function buildTrendSummary(history, latestPayload) {
   if (history.length < 2) {
-    return "Analyze a few PRs to see whether your quality is improving over time.";
+    return "Check another PR and this will show whether the score went up or down.";
   }
 
   const latest = history[0];
@@ -502,7 +502,7 @@ function renderHistoryChart(history) {
   historyChart.innerHTML = "";
 
   if (history.length === 0) {
-    historyChart.innerHTML = `<div class="history-chart-empty">No chart yet. Analyze PRs to build your score graph.</div>`;
+    historyChart.innerHTML = `<div class="history-chart-empty">Check a few PRs and they’ll show up here.</div>`;
     return;
   }
 
@@ -571,7 +571,7 @@ function setLoading(isLoading) {
 
   submitButton.disabled = isLoading;
   submitButton.classList.toggle("is-loading", isLoading);
-  submitButton.textContent = isLoading ? "Analyzing…" : "Analyze PR";
+  submitButton.textContent = isLoading ? "Checking…" : "Check it";
 }
 
 function setStatus(message, isError = false) {

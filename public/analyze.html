@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
     <meta name="theme-color" content="#0b0f14" />
-    <link rel="stylesheet" href="/styles.css?v=2" />
+    <link rel="stylesheet" href="/styles.css?v=3" />
   </head>
   <body>
     <div class="page-shell">
@@ -19,7 +19,7 @@
           </span>
           <span class="brand-copy">
             <strong>ChunkCheck</strong>
-            <small>Pull request quality, explained</small>
+            <small>A second look before review</small>
           </span>
         </a>
         <nav class="top-nav" aria-label="Main">
@@ -31,12 +31,11 @@
 
       <main class="analyze-layout">
         <section class="single-panel">
-          <p class="eyebrow">Analyze Pull Request</p>
-          <h1 class="page-title">Paste a GitHub PR link and generate a quality report.</h1>
-          <p class="section-copy">Use any GitHub pull request URL from any repository and language stack.</p>
+                    <h1 class="page-title">Check a pull request</h1>
+          <p class="section-copy">Any public GitHub PR works, in any language.</p>
 
           <form id="analyze-form" class="analyze-form">
-            <label class="field-label" for="pr-url">GitHub Pull Request URL</label>
+            <label class="field-label" for="pr-url">Pull request link</label>
             <div class="stacked-form">
               <input
                 id="pr-url"
@@ -45,30 +44,15 @@
                 placeholder="https://github.com/owner/repo/pull/123"
                 required
               />
-              <button type="submit">Analyze PR</button>
+              <button type="submit">Check it</button>
             </div>
-            <p class="form-hint">Public PRs work best unless a GitHub token is configured on the server.</p>
+            <p class="form-hint">Private repos won’t work unless the server has a GitHub token for them.</p>
           </form>
           <div class="example-row" aria-label="Example pull requests">
-            <span class="example-label">Try an example:</span>
+            <span class="example-label">Or try:</span>
             <a class="example-chip" href="?url=https%3A%2F%2Fgithub.com%2Fcheckstyle%2Fcheckstyle%2Fpull%2F21799">checkstyle #21799</a>
             <a class="example-chip" href="?url=https%3A%2F%2Fgithub.com%2Fexpressjs%2Fexpress%2Fpull%2F6097">express #6097</a>
             <a class="example-chip" href="?url=https%3A%2F%2Fgithub.com%2Fnodejs%2Fnode%2Fpull%2F67393">node #67393</a>
-          </div>
-
-          <div class="mini-feature-row">
-            <div class="mini-feature">
-              <span class="mini-feature-title">Size</span>
-              <span class="mini-feature-copy">Files and line changes</span>
-            </div>
-            <div class="mini-feature">
-              <span class="mini-feature-title">Reliability</span>
-              <span class="mini-feature-copy">Tests and CI coverage</span>
-            </div>
-            <div class="mini-feature">
-              <span class="mini-feature-title">Reviewability</span>
-              <span class="mini-feature-copy">Docs and commit quality</span>
-            </div>
           </div>
 
           <div id="status" class="status" aria-live="polite"></div>
@@ -76,65 +60,67 @@
 
         <section id="results" class="results hidden" aria-live="polite">
           <div class="dashboard-grid">
-            <div class="summary-card dashboard-hero hologram-card">
-              <div class="score-ring-card">
-                <div class="score-ring" id="score-ring" style="--score: 0;">
-                  <div class="score-ring-inner">
-                    <span class="score-ring-value" id="score-ring-value">0</span>
-                    <span class="score-ring-total">/100</span>
+            <div class="main-column">
+              <div class="summary-card dashboard-hero hologram-card">
+                <div class="score-ring-card">
+                  <div class="score-ring" id="score-ring" style="--score: 0;">
+                    <div class="score-ring-inner">
+                      <span class="score-ring-value" id="score-ring-value">0</span>
+                      <span class="score-ring-total">/100</span>
+                    </div>
+                  </div>
+                  <div class="summary-copy">
+                    <p class="summary-label">PR Score</p>
+                    <h2 id="score-summary">&nbsp;</h2>
+                    <p id="score-title" class="summary-text"></p>
                   </div>
                 </div>
-                <div class="summary-copy">
-                  <p class="summary-label">PR Score</p>
-                  <h2 id="score-summary">&nbsp;</h2>
-                  <p id="score-title" class="summary-text"></p>
-                </div>
-              </div>
 
-              <div class="summary-side">
-                <div class="report-actions">
-                  <button type="button" id="copy-report-button" class="ghost-button">Copy report as Markdown</button>
+                <div class="summary-side">
+                  <div class="report-actions">
+                    <button type="button" id="copy-report-button" class="ghost-button">Copy report as Markdown</button>
+                  </div>
+                  <div class="repo-meta">
+                    <p id="repo-name" class="repo-name"></p>
+                    <a id="pr-link" href="#" target="_blank" rel="noreferrer" class="repo-link">Open pull request</a>
+                  </div>
+                  <div class="badge-grid" id="badge-grid"></div>
                 </div>
-                <div class="repo-meta">
-                  <p id="repo-name" class="repo-name"></p>
-                  <a id="pr-link" href="#" target="_blank" rel="noreferrer" class="repo-link">Open pull request</a>
-                </div>
-                <div class="badge-grid" id="badge-grid"></div>
               </div>
+            <section class="detail-card files-card">
+              <h3>Start reviewing here</h3>
+              <p class="section-copy">The files with the most changed lines.</p>
+              <div id="files-list" class="files-list"></div>
+            </section>
             </div>
 
             <aside class="side-panel">
               <section class="detail-card">
-                <h3>Score Breakdown</h3>
+                <h3>Where the points went</h3>
                 <div id="breakdown-list" class="breakdown-list"></div>
               </section>
 
               <section class="detail-card">
-                <h3>How To Improve</h3>
+                <h3>What to fix first</h3>
                 <ul id="improvement-list" class="detail-list"></ul>
               </section>
 
               <section class="detail-card">
-                <h3>Progress Trend</h3>
-                <div id="trend-summary" class="trend-summary">Analyze a few PRs to see whether your quality is improving.</div>
+                <h3>Compared with your last check</h3>
+                <div id="trend-summary" class="trend-summary"></div>
               </section>
 
               <section class="detail-card">
-                <h3>Performance Chart</h3>
+                <h3>Your recent scores</h3>
                 <div id="history-chart" class="history-chart" aria-label="PR score history chart"></div>
               </section>
             </aside>
           </div>
 
-          <section class="detail-card files-card">
-            <h3>Biggest files</h3>
-            <p class="section-copy">Start reviewing here: the files with the most changed lines.</p>
-            <div id="files-list" class="files-list"></div>
-          </section>
 
           <section class="detail-card badge-card">
-            <h3>README Badge</h3>
-            <p class="section-copy">Show this PR's score in a README or PR description.</p>
+            <h3>Badge for your README</h3>
+            <p class="section-copy">Paste this into a README or PR description.</p>
             <div class="badge-preview"><img id="badge-img" alt="ChunkCheck score badge" /></div>
             <div class="badge-copy-row">
               <code id="badge-markdown"></code>
@@ -145,10 +131,9 @@
           <div class="history-card">
             <div class="history-header">
               <div>
-                <p class="summary-label">PR History</p>
-                <h3>Your recent PR analyses</h3>
+                                <h3>PRs you’ve checked</h3>
               </div>
-              <button id="clear-history-button" type="button" class="ghost-button">Clear History</button>
+              <button id="clear-history-button" type="button" class="ghost-button">Clear</button>
             </div>
             <div id="history-list" class="history-list"></div>
           </div>
@@ -157,12 +142,12 @@
 
           <div class="details-grid">
             <section class="detail-card">
-              <h3>Strengths</h3>
+              <h3>What’s good</h3>
               <ul id="strengths-list" class="detail-list"></ul>
             </section>
 
             <section class="detail-card">
-              <h3>Risk signals</h3>
+              <h3>What a reviewer will notice</h3>
               <ul id="analysis-list" class="detail-list"></ul>
             </section>
           </div>
