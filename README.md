@@ -17,6 +17,8 @@ ChunkCheck is a small Node.js service and web UI that analyzes a GitHub pull req
 - Includes a homepage with a PR URL form and visual results dashboard
 - **Score breakdown** – points per category (size 30, tests 20, CI 25, commits 10, docs 15), so the total is always explained
 - **Trends dashboard** (`/dashboard.html`) – scores a repository's 10 most recently merged PRs, with a trend chart, average, best/lowest PR and trend direction
+- **Biggest files** – the changed files with the most lines, so reviewers know where to start
+- **Copy report as Markdown** – paste the full report into a PR comment; report links (`/analyze.html?url=...`) open and run automatically
 - **README badge** – `/api/badge?url=<PR URL>` returns an SVG score badge; the report page gives a ready-to-copy Markdown snippet
 - **GitHub Action** – runs on a pull request and posts the score as a PR comment
 - **Chrome extension** – shows the score and suggestions directly on GitHub PR pages

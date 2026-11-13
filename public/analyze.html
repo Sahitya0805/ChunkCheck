@@ -42,21 +42,6 @@
           <h1 class="page-title">Paste a GitHub PR link and generate a quality report.</h1>
           <p class="section-copy">Use any GitHub pull request URL from any repository and language stack.</p>
 
-          <div class="mini-feature-row">
-            <div class="mini-feature">
-              <span class="mini-feature-title">Size</span>
-              <span class="mini-feature-copy">Files and line changes</span>
-            </div>
-            <div class="mini-feature">
-              <span class="mini-feature-title">Reliability</span>
-              <span class="mini-feature-copy">Tests and CI coverage</span>
-            </div>
-            <div class="mini-feature">
-              <span class="mini-feature-title">Reviewability</span>
-              <span class="mini-feature-copy">Docs and commit quality</span>
-            </div>
-          </div>
-
           <form id="analyze-form" class="analyze-form">
             <label class="field-label" for="pr-url">GitHub Pull Request URL</label>
             <div class="stacked-form">
@@ -71,6 +56,27 @@
             </div>
             <p class="form-hint">Public PRs work best unless a GitHub token is configured on the server.</p>
           </form>
+          <div class="example-row" aria-label="Example pull requests">
+            <span class="example-label">Try an example:</span>
+            <a class="example-chip" href="?url=https%3A%2F%2Fgithub.com%2Fcheckstyle%2Fcheckstyle%2Fpull%2F21799">checkstyle #21799</a>
+            <a class="example-chip" href="?url=https%3A%2F%2Fgithub.com%2Fexpressjs%2Fexpress%2Fpull%2F6097">express #6097</a>
+            <a class="example-chip" href="?url=https%3A%2F%2Fgithub.com%2Fnodejs%2Fnode%2Fpull%2F67393">node #67393</a>
+          </div>
+
+          <div class="mini-feature-row">
+            <div class="mini-feature">
+              <span class="mini-feature-title">Size</span>
+              <span class="mini-feature-copy">Files and line changes</span>
+            </div>
+            <div class="mini-feature">
+              <span class="mini-feature-title">Reliability</span>
+              <span class="mini-feature-copy">Tests and CI coverage</span>
+            </div>
+            <div class="mini-feature">
+              <span class="mini-feature-title">Reviewability</span>
+              <span class="mini-feature-copy">Docs and commit quality</span>
+            </div>
+          </div>
 
           <div id="status" class="status" aria-live="polite"></div>
         </section>
@@ -93,6 +99,9 @@
               </div>
 
               <div class="summary-side">
+                <div class="report-actions">
+                  <button type="button" id="copy-report-button" class="ghost-button">Copy report as Markdown</button>
+                </div>
                 <div class="repo-meta">
                   <p id="repo-name" class="repo-name"></p>
                   <a id="pr-link" href="#" target="_blank" rel="noreferrer" class="repo-link">Open pull request</a>
@@ -123,6 +132,12 @@
               </section>
             </aside>
           </div>
+
+          <section class="detail-card files-card">
+            <h3>Biggest files</h3>
+            <p class="section-copy">Start reviewing here: the files with the most changed lines.</p>
+            <div id="files-list" class="files-list"></div>
+          </section>
 
           <section class="detail-card badge-card">
             <h3>README Badge</h3>

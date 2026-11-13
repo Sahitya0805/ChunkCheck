@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const scorePR = require("../analyzer/scoringEngine");
-const { classifySize, WEIGHTS } = require("../analyzer/scoringEngine");
+const { classifySize, WEIGHTS, largestFiles } = require("../analyzer/scoringEngine");
 
 function makePr({ files = 3, lines = 40, ci = "passing", tests = true, docs = false, commitMessage = "Add retry to fetch" } = {}) {
   const fileList = Array.from({ length: files }, (_, i) => ({ filename: `src/File${i}.js`, status: "modified" }));
@@ -61,4 +61,20 @@ test("vague commit messages lose commit points", () => {
   const result = makePr({ commitMessage: "wip" });
   const commits = result.breakdown.find((b) => b.key === "commits");
   assert.ok(commits.points < commits.max);
+});
+
+test("largest files are sorted by lines changed and capped at five", () => {
+  const files = [
+    { filename: "a.js", additions: 1, deletions: 0 },
+    { filename: "b.js", additions: 50, deletions: 10 },
+    { filename: "c.js", additions: 0, deletions: 0 },
+    { filename: "d.js", additions: 5, deletions: 5, changes: 10 },
+    { filename: "e.js", additions: 2, deletions: 0 },
+    { filename: "f.js", additions: 3, deletions: 0 },
+    { filename: "g.js", additions: 4, deletions: 0 }
+  ];
+  const top = largestFiles(files);
+  assert.equal(top.length, 5);
+  assert.deepEqual(top.map((f) => f.filename), ["b.js", "d.js", "g.js", "f.js", "e.js"]);
+  assert.equal(top[0].changes, 60);
 });

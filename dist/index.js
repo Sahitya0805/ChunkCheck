@@ -28631,10 +28631,20 @@ var require_scoringEngine = __commonJS({
           ciStatus: capitalize(metrics.ciStatus),
           commits: commits.length
         },
+        largestFiles: largestFiles(files),
         strengths: pick("strength"),
         suggestions: pick("suggestion"),
         analysis: pick("risk")
       };
+    }
+    function largestFiles(files, limit = 5) {
+      return [...files].map((file) => ({
+        filename: file.filename,
+        status: file.status,
+        additions: file.additions || 0,
+        deletions: file.deletions || 0,
+        changes: file.changes ?? (file.additions || 0) + (file.deletions || 0)
+      })).filter((file) => file.changes > 0).sort((a, b) => b.changes - a.changes || a.filename.localeCompare(b.filename)).slice(0, limit);
     }
     function hasSourceCodeChanges(files) {
       return files.some(
@@ -28662,6 +28672,7 @@ var require_scoringEngine = __commonJS({
     module2.exports = scorePR;
     module2.exports.classifySize = classifySize;
     module2.exports.WEIGHTS = WEIGHTS;
+    module2.exports.largestFiles = largestFiles;
   }
 });
 

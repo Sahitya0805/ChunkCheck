@@ -1083,3 +1083,158 @@ input:focus-visible {
   font-size: 0.78rem;
   overflow-wrap: anywhere;
 }
+
+/* ---------- Quick analyze, examples, report tools ---------- */
+.quick-analyze {
+  margin: 26px auto 10px;
+  max-width: 760px;
+  text-align: left;
+}
+
+.quick-analyze-row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+}
+
+.example-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 12px auto 22px;
+  max-width: 760px;
+  font-size: 0.85rem;
+}
+
+.single-panel .example-row {
+  justify-content: flex-start;
+  margin: 4px 0 18px;
+}
+
+.example-label {
+  color: var(--ink-soft);
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.example-chip {
+  padding: 6px 10px;
+  border: 2px solid var(--border);
+  background: var(--paper-strong);
+  color: var(--accent-strong);
+  font-family: "IBM Plex Mono", monospace;
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.example-chip:hover,
+.example-chip:focus-visible {
+  background: var(--accent);
+  color: #f8fbfc;
+}
+
+.report-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.files-card {
+  margin-bottom: 18px;
+}
+
+.files-list {
+  display: grid;
+  gap: 12px;
+}
+
+.file-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+.file-head code {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: "IBM Plex Mono", monospace;
+}
+
+.file-head .add { color: var(--accent-strong); font-weight: 700; }
+.file-head .del { color: var(--danger); font-weight: 700; }
+
+.file-bar {
+  height: 8px;
+  background: var(--paper-strong);
+  border: 2px solid var(--border);
+}
+
+.file-bar span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+}
+
+/* ---------- Phone layout ---------- */
+@media (max-width: 720px) {
+  .simple-topbar {
+    display: flex;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+  }
+
+  .brand-copy small {
+    display: none;
+  }
+
+  .simple-topbar {
+    gap: 10px;
+  }
+
+  .brand-lockup {
+    min-width: 0;
+    gap: 10px;
+  }
+
+  .brand-mark {
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+  }
+
+  .brand-copy strong {
+    font-size: 0.85rem;
+  }
+
+  .login-link {
+    min-height: 40px;
+    padding: 0 14px;
+    width: auto;
+  }
+
+  h1 {
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+
+  .page-title {
+    font-size: 1rem;
+  }
+
+  .quick-analyze-row {
+    grid-template-columns: 1fr;
+  }
+
+  .mini-feature-row {
+    display: none;
+  }
+
+  .report-actions {
+    justify-content: flex-start;
+  }
+}

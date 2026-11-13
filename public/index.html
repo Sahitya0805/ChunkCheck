@@ -46,6 +46,20 @@
             clear suggestions like adding tests or splitting a large PR.
           </p>
 
+          <form class="quick-analyze" action="/analyze.html" method="get">
+            <label class="field-label" for="quick-pr-url">GitHub Pull Request URL</label>
+            <div class="quick-analyze-row">
+              <input id="quick-pr-url" name="url" type="url" required placeholder="https://github.com/owner/repo/pull/123" />
+              <button type="submit">Analyze PR</button>
+            </div>
+          </form>
+          <div class="example-row" aria-label="Example pull requests">
+            <span class="example-label">Try an example:</span>
+            <a class="example-chip" href="/analyze.html?url=https%3A%2F%2Fgithub.com%2Fcheckstyle%2Fcheckstyle%2Fpull%2F21799">checkstyle #21799</a>
+            <a class="example-chip" href="/analyze.html?url=https%3A%2F%2Fgithub.com%2Fexpressjs%2Fexpress%2Fpull%2F6097">express #6097</a>
+            <a class="example-chip" href="/analyze.html?url=https%3A%2F%2Fgithub.com%2Fnodejs%2Fnode%2Fpull%2F67393">node #67393</a>
+          </div>
+
           <div class="hero-ribbon">
             <div class="ribbon-item">
               <span class="ribbon-value">0-100</span>

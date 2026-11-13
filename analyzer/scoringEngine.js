@@ -177,10 +177,26 @@ function scorePR({ owner, repo, prNumber, pr, files, commits, metrics }) {
       ciStatus: capitalize(metrics.ciStatus),
       commits: commits.length
     },
+    largestFiles: largestFiles(files),
     strengths: pick("strength"),
     suggestions: pick("suggestion"),
     analysis: pick("risk")
   };
+}
+
+// The changed files with the most lines, so reviewers know where to start.
+function largestFiles(files, limit = 5) {
+  return [...files]
+    .map((file) => ({
+      filename: file.filename,
+      status: file.status,
+      additions: file.additions || 0,
+      deletions: file.deletions || 0,
+      changes: file.changes ?? (file.additions || 0) + (file.deletions || 0)
+    }))
+    .filter((file) => file.changes > 0)
+    .sort((a, b) => b.changes - a.changes || a.filename.localeCompare(b.filename))
+    .slice(0, limit);
 }
 
 function hasSourceCodeChanges(files) {
@@ -214,3 +230,4 @@ function capitalize(value) {
 module.exports = scorePR;
 module.exports.classifySize = classifySize;
 module.exports.WEIGHTS = WEIGHTS;
+module.exports.largestFiles = largestFiles;
